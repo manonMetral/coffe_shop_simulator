@@ -52,4 +52,16 @@ describe('CustomerQueue', () => {
 
     expect(queue.wait(1)).toEqual([]);
   });
+
+  it('removes a customer who is served', () => {
+    const queue = new CustomerQueue();
+    const first = relaxed(1);
+    const second = relaxed(2);
+    queue.enqueue(first);
+    queue.enqueue(second);
+
+    queue.remove(first);
+
+    expect(queue.customers()).toEqual([second]);
+  });
 });

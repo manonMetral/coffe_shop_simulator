@@ -6,4 +6,13 @@ describe('CashRegister', () => {
   it('holds its balance', () => {
     expect(new CashRegister(Money.ofCents(30000)).balance().cents).toBe(30000);
   });
+
+  it('grows with every deposit', () => {
+    const cashRegister = new CashRegister(Money.ofCents(30000));
+
+    cashRegister.deposit(Money.ofCents(520));
+    cashRegister.deposit(Money.ofCents(80));
+
+    expect(cashRegister.balance().cents).toBe(30600);
+  });
 });

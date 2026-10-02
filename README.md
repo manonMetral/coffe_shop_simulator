@@ -35,7 +35,7 @@ npm run dev
 Le backend lit sa configuration dans les variables d'environnement (liste et valeurs par défaut dans `backend/.env.example`, le fichier n'est pas chargé automatiquement). Les valeurs sont validées au démarrage : une variable invalide (non numérique, vide, hors bornes) arrête le backend avec la liste des erreurs. Exemple : `TIME_SCALE=60 npm run dev` accélère la simulation.
 
 - Frontend : http://localhost:5173 (le proxy Vite redirige `/api` vers le backend)
-- Backend : http://localhost:3000, avec `GET /api/health`, `GET /api/menu` (boissons, recettes, coût et prix de vente en centimes), `GET /api/inventory` (stock par ingrédient) et un WebSocket sur `/ws` (snapshot à la connexion, puis événements de la simulation)
+- Backend : http://localhost:3000, avec `GET /api/health`, `GET /api/menu` (boissons, recettes, coût et prix de vente en centimes), `GET /api/inventory` (stock par ingrédient), `GET /api/staff` (serveurs, vitesse, boissons maîtrisées, commande en cours) et un WebSocket sur `/ws` (snapshot à la connexion, puis événements de la simulation)
 
 ## Scripts
 

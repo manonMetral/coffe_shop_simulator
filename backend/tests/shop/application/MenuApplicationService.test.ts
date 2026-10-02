@@ -16,6 +16,7 @@ describe('MenuApplicationService', () => {
       name: DrinkName.LATTE,
       costCents: 550,
       priceCents: 715,
+      preparationMinutes: 4,
       recipe: [
         { ingredient: IngredientName.COFFEE, quantity: 2 },
         { ingredient: IngredientName.MILK, quantity: 1 },

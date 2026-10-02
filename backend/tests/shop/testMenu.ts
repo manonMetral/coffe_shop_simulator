@@ -13,8 +13,8 @@ export const latteRecipe = new Recipe([
   { ingredient: IngredientName.MILK, quantity: 1 },
 ]);
 
-export const espresso = { name: DrinkName.ESPRESSO, recipe: espressoRecipe };
-export const latte = { name: DrinkName.LATTE, recipe: latteRecipe };
+export const espresso = { name: DrinkName.ESPRESSO, recipe: espressoRecipe, preparationMinutes: 2 };
+export const latte = { name: DrinkName.LATTE, recipe: latteRecipe, preparationMinutes: 4 };
 
 export function createTestMenu(): Menu {
   return new Menu([coffee, milk], [espresso, latte]);

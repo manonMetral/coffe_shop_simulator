@@ -48,6 +48,7 @@ describe('ShopStatusBar', () => {
         dayLengthMinutes: 480,
         cashCents: 30000,
         queue: [],
+        servers: [],
       },
       status: 'open',
     });

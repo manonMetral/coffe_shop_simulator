@@ -22,6 +22,11 @@ export class Money {
     return new Money(this.cents * quantity);
   }
 
+  /** The given percentage of this amount, rounded to the nearest cent. */
+  percent(percent: number): Money {
+    return Money.ofCents(Math.round((this.cents * percent) / 100));
+  }
+
   /** Adds a margin expressed as a percentage of this amount, rounded to the nearest cent. */
   withMargin(percent: number): Money {
     return Money.ofCents(Math.round((this.cents * (100 + percent)) / 100));

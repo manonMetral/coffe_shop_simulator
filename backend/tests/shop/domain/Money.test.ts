@@ -30,4 +30,9 @@ describe('Money', () => {
   it('rounds the margin to the nearest cent', () => {
     expect(Money.ofCents(333).withMargin(30).cents).toBe(433);
   });
+
+  it('computes a percentage of an amount, rounded to the nearest cent', () => {
+    expect(Money.ofCents(1000).percent(15).cents).toBe(150);
+    expect(Money.ofCents(585).percent(10).cents).toBe(59);
+  });
 });

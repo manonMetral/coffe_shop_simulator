@@ -23,6 +23,11 @@ export class Menu {
       if (this.drinksByName.has(drink.name)) {
         throw new InvalidMenuError(`Duplicate drink: ${drink.name}`);
       }
+      if (!Number.isFinite(drink.preparationMinutes) || drink.preparationMinutes <= 0) {
+        throw new InvalidMenuError(
+          `Invalid preparation time for ${drink.name}: ${drink.preparationMinutes}`,
+        );
+      }
       for (const { ingredient } of drink.recipe.items) {
         this.ingredient(ingredient);
       }

@@ -20,6 +20,7 @@ const drinks: Drink[] = [
       { ingredient: IngredientName.COFFEE, quantity: 2 },
       { ingredient: IngredientName.WATER, quantity: 1 },
     ]),
+    preparationMinutes: 2,
   },
   {
     name: DrinkName.TEA,
@@ -27,6 +28,7 @@ const drinks: Drink[] = [
       { ingredient: IngredientName.TEA, quantity: 1 },
       { ingredient: IngredientName.WATER, quantity: 1 },
     ]),
+    preparationMinutes: 3,
   },
   {
     name: DrinkName.LATTE,
@@ -34,6 +36,7 @@ const drinks: Drink[] = [
       { ingredient: IngredientName.COFFEE, quantity: 2 },
       { ingredient: IngredientName.MILK, quantity: 1 },
     ]),
+    preparationMinutes: 4,
   },
 ];
 

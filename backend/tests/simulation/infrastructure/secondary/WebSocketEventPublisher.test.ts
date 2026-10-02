@@ -11,6 +11,7 @@ const snapshot: SimulationSnapshot = {
   dayLengthMinutes: 480,
   cashCents: 30000,
   queue: [],
+  servers: [],
 };
 
 const fakeSocket = (readyState: number) =>

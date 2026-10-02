@@ -18,6 +18,11 @@ export class Customer {
     return this.waited;
   }
 
+  /** Simulated minutes before the customer leaves, the lower the more urgent. */
+  get remainingPatienceMinutes(): number {
+    return this.patienceMinutes - this.waited;
+  }
+
   /** Makes the customer wait, in simulated minutes. */
   wait(minutes: number): void {
     this.waited += minutes;

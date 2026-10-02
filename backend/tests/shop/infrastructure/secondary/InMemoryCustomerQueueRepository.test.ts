@@ -8,4 +8,13 @@ describe('InMemoryCustomerQueueRepository', () => {
 
     expect(await new InMemoryCustomerQueueRepository(queue).get()).toBe(queue);
   });
+
+  it('replaces the queue on save', async () => {
+    const repository = new InMemoryCustomerQueueRepository(new CustomerQueue());
+    const other = new CustomerQueue();
+
+    await repository.save(other);
+
+    expect(await repository.get()).toBe(other);
+  });
 });
