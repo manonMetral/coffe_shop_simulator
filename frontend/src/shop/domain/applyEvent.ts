@@ -20,10 +20,21 @@ export function applyEvent(state: ShopState, event: ShopEvent): ShopState {
       return { ...state, cashCents: event.cashCents };
     case 'servers-updated':
       return { ...state, servers: event.servers };
+    case 'restock-ordered':
+      return { ...state, cashCents: event.cashCents };
+    case 'inventory-updated':
+      return { ...state, inventory: event.inventory };
+    case 'rush-hour-started':
+      return { ...state, rushHourMultiplier: event.multiplier };
+    case 'rush-hour-ended':
+      return { ...state, rushHourMultiplier: 1 };
+    case 'day-report':
+      return { ...state, reports: [...state.reports, event.report] };
     // Nothing to change in the state: these events are for the journal of events.
     case 'day-ended':
     case 'order-started':
     case 'stock-low':
+    case 'restock-delivered':
       return state;
   }
 }

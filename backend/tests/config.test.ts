@@ -19,6 +19,10 @@ describe('config', () => {
       'DAY_START_HOUR',
       'CUSTOMERS_PER_HOUR',
       'RANDOM_SEED',
+      'RESTOCK_DELAY_MINUTES',
+      'RUSH_HOUR_START_MINUTE',
+      'RUSH_HOUR_DURATION_MINUTES',
+      'RUSH_HOUR_MULTIPLIER',
     ]) {
       vi.stubEnv(name, undefined);
     }
@@ -43,6 +47,10 @@ describe('config', () => {
       dayStartHour: 8,
       customersPerHour: 20,
       randomSeed: expect.any(Number),
+      restockDelayMinutes: 60,
+      rushHourStartMinute: 240,
+      rushHourDurationMinutes: 120,
+      rushHourMultiplier: 2.5,
     });
   });
 
@@ -58,6 +66,10 @@ describe('config', () => {
     vi.stubEnv('DAY_START_HOUR', '9');
     vi.stubEnv('CUSTOMERS_PER_HOUR', '30');
     vi.stubEnv('RANDOM_SEED', '42');
+    vi.stubEnv('RESTOCK_DELAY_MINUTES', '30');
+    vi.stubEnv('RUSH_HOUR_START_MINUTE', '60');
+    vi.stubEnv('RUSH_HOUR_DURATION_MINUTES', '90');
+    vi.stubEnv('RUSH_HOUR_MULTIPLIER', '3');
 
     const config = await loadConfig();
 
@@ -73,6 +85,10 @@ describe('config', () => {
       dayStartHour: 9,
       customersPerHour: 30,
       randomSeed: 42,
+      restockDelayMinutes: 30,
+      rushHourStartMinute: 60,
+      rushHourDurationMinutes: 90,
+      rushHourMultiplier: 3,
     });
   });
 
@@ -86,6 +102,11 @@ describe('config', () => {
     ['TICK_INTERVAL_MS', '1.5'],
     ['CUSTOMERS_PER_HOUR', '0'],
     ['CUSTOMERS_PER_HOUR', 'abc'],
+    ['RESTOCK_DELAY_MINUTES', '0'],
+    ['RUSH_HOUR_START_MINUTE', '-1'],
+    ['RUSH_HOUR_START_MINUTE', '1441'],
+    ['RUSH_HOUR_DURATION_MINUTES', '1.5'],
+    ['RUSH_HOUR_MULTIPLIER', '0'],
     ['RANDOM_SEED', '-1'],
     ['RANDOM_SEED', '1.5'],
     ['PORT', 'abc'],
@@ -113,5 +134,28 @@ describe('config', () => {
     vi.stubEnv('TIME_SCALE', '0.5');
 
     expect((await loadConfig()).timeScale).toBe(0.5);
+  });
+
+  describe('rush hour', () => {
+    it('must end before the end of the day', async () => {
+      vi.stubEnv('DAY_LENGTH_MINUTES', '300');
+
+      await expect(loadConfig()).rejects.toThrow(
+        '- RUSH_HOUR_START_MINUTE + RUSH_HOUR_DURATION_MINUTES must not exceed DAY_LENGTH_MINUTES (300)',
+      );
+    });
+
+    it('can end exactly when the day ends', async () => {
+      vi.stubEnv('DAY_LENGTH_MINUTES', '360');
+
+      expect((await loadConfig()).dayLengthMinutes).toBe(360);
+    });
+
+    it('can be disabled with a duration of 0, whatever the length of the day', async () => {
+      vi.stubEnv('DAY_LENGTH_MINUTES', '60');
+      vi.stubEnv('RUSH_HOUR_DURATION_MINUTES', '0');
+
+      expect((await loadConfig()).rushHourDurationMinutes).toBe(0);
+    });
   });
 });

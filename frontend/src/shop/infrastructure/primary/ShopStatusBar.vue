@@ -17,6 +17,9 @@ const statusLabel = computed(() => statusLabels[shop.view.status]);
       <span>Jour {{ shop.view.state.day }}</span>
       <span>{{ shop.view.state.time }}</span>
       <span>Caisse {{ formatEuros(shop.view.state.cashCents) }}</span>
+      <span v-if="shop.view.state.rushHourMultiplier > 1" class="rush">
+        Rush hour x{{ shop.view.state.rushHourMultiplier }}
+      </span>
     </template>
     <span v-else>En attente des données…</span>
     <span class="connection" :data-status="shop.view.status">{{ statusLabel }}</span>
@@ -32,6 +35,13 @@ const statusLabel = computed(() => statusLabels[shop.view.status]);
   background: #2b1d14;
   color: #faf5ef;
   border-radius: 0.5rem;
+}
+
+.rush {
+  padding: 0.1rem 0.6rem;
+  background: #c0392b;
+  border-radius: 1rem;
+  font-size: 0.85rem;
 }
 
 .connection {

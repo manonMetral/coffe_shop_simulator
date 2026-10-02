@@ -14,7 +14,21 @@ import type { ShopModule } from './shop.js';
 export function createSimulationModule(shop: ShopModule, webSocketServer: WebSocketServer) {
   const logger = new ConsoleLogger();
   const simulationService: SimulationApplicationService = new SimulationApplicationService(
-    new InMemoryCalendarRepository(Calendar.start(config.dayLengthMinutes, config.dayStartHour)),
+    new InMemoryCalendarRepository(
+      Calendar.start(
+        config.dayLengthMinutes,
+        config.dayStartHour,
+        config.rushHourDurationMinutes > 0
+          ? [
+              {
+                startMinute: config.rushHourStartMinute,
+                durationMinutes: config.rushHourDurationMinutes,
+                multiplier: config.rushHourMultiplier,
+              },
+            ]
+          : [],
+      ),
+    ),
     new SystemClock(),
     new IntervalTickScheduler(),
     new WebSocketEventPublisher(webSocketServer, () => simulationService.getSnapshot(), logger),

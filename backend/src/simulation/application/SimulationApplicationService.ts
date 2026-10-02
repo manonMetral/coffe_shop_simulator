@@ -45,12 +45,21 @@ export class SimulationApplicationService {
     this.lastTickAt = now;
 
     const calendar = await this.calendarRepository.get();
+    // The customers of this tick arrive at the rate of the moment the tick starts.
+    const arrivalMultiplier = calendar.arrivalMultiplier;
     const events = calendar.advance(simulatedMinutes);
     await this.calendarRepository.save(calendar);
     events.forEach((event) => this.publisher.publish(event));
 
-    const shopEvents = await this.shopFlow.advance(simulatedMinutes);
+    const shopEvents = await this.shopFlow.advance(simulatedMinutes, arrivalMultiplier);
     shopEvents.forEach((event) => this.publisher.publish(event));
+
+    for (const event of events) {
+      if (event.type === 'day-ended') {
+        const reportEvents = await this.shopFlow.closeDay(event.day);
+        reportEvents.forEach((reportEvent) => this.publisher.publish(reportEvent));
+      }
+    }
   }
 
   /** A failing tick is logged and the next ones still run: it must never crash the process. */
@@ -72,6 +81,7 @@ export class SimulationApplicationService {
       minuteOfDay: calendar.minuteOfDay,
       time: calendar.time,
       dayLengthMinutes: calendar.dayLengthMinutes,
+      rushHourMultiplier: calendar.arrivalMultiplier,
       ...shop,
     };
   }

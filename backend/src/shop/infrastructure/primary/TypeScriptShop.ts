@@ -5,8 +5,12 @@ import type { ShopEvent, ShopSnapshot } from '../../application/ShopViews.js';
 export class TypeScriptShop {
   constructor(private readonly shopService: ShopApplicationService) {}
 
-  advance(simulatedMinutes: number): Promise<ShopEvent[]> {
-    return this.shopService.advance(simulatedMinutes);
+  advance(simulatedMinutes: number, arrivalMultiplier: number): Promise<ShopEvent[]> {
+    return this.shopService.advance(simulatedMinutes, arrivalMultiplier);
+  }
+
+  closeDay(day: number): Promise<ShopEvent[]> {
+    return this.shopService.closeDay(day);
   }
 
   snapshot(): Promise<ShopSnapshot> {

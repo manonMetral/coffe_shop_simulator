@@ -1,15 +1,8 @@
 import type { InventoryRepository } from '../domain/inventory/InventoryRepository.js';
 import type { StockLow } from '../domain/inventory/StockLow.js';
 import type { DrinkName } from '../domain/menu/DrinkName.js';
-import type { IngredientName } from '../domain/menu/IngredientName.js';
 import type { MenuRepository } from '../domain/menu/MenuRepository.js';
-
-export interface StockView {
-  ingredient: IngredientName;
-  quantity: number;
-  capacity: number;
-  low: boolean;
-}
+import { type StockView, toStockViews } from './ShopViews.js';
 
 export class InventoryApplicationService {
   constructor(
@@ -18,13 +11,7 @@ export class InventoryApplicationService {
   ) {}
 
   async getInventory(): Promise<StockView[]> {
-    const inventory = await this.inventoryRepository.get();
-    return inventory.levels().map(({ ingredient, quantity }) => ({
-      ingredient,
-      quantity,
-      capacity: inventory.capacity,
-      low: inventory.isLow(ingredient),
-    }));
+    return toStockViews(await this.inventoryRepository.get());
   }
 
   /** Consumes the ingredients needed for a drink and returns the low stock alerts it triggers. */

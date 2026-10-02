@@ -6,4 +6,6 @@ export interface SimulationSnapshot extends ShopSnapshot {
   readonly minuteOfDay: number;
   readonly time: string;
   readonly dayLengthMinutes: number;
+  /** 1 outside the rush hours. */
+  readonly rushHourMultiplier: number;
 }

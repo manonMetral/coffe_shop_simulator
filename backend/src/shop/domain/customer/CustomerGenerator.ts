@@ -30,10 +30,14 @@ export class CustomerGenerator {
     this.minutesBeforeNextArrival = this.drawArrivalDelay();
   }
 
-  /** Returns the customers arriving during the given simulated minutes. */
-  advance(minutes: number): Customer[] {
+  /**
+   * Returns the customers arriving during the given simulated minutes.
+   * With an arrival multiplier of 2 (a rush hour), customers arrive twice as often.
+   */
+  advance(minutes: number, arrivalMultiplier = 1): Customer[] {
     const arrivals: Customer[] = [];
-    let remaining = minutes;
+    // A faster arrival rate is the same as letting the time go by faster for the arrivals.
+    let remaining = minutes * arrivalMultiplier;
     while (remaining >= this.minutesBeforeNextArrival) {
       remaining -= this.minutesBeforeNextArrival;
       arrivals.push(this.createCustomer());

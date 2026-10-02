@@ -16,6 +16,9 @@ const state = (queue: Customer[]) => ({
   cashCents: 30000,
   queue,
   servers: [],
+  inventory: [],
+  reports: [],
+  rushHourMultiplier: 1,
 });
 
 function mountQueue() {
@@ -49,6 +52,7 @@ describe('ShopQueue', () => {
         { id: 5, personality: 'Généreux', drink: 'Latte', patienceMinutes: 15, waitedMinutes: 0 },
       ]),
       status: 'open',
+      journal: [],
     });
 
     expect(wrapper.text()).toContain("File d'attente (2)");
@@ -68,6 +72,7 @@ describe('ShopQueue', () => {
         { id: 2, personality: 'Pressé', drink: 'Espresso', patienceMinutes: 6, waitedMinutes: 5 },
       ]),
       status: 'open',
+      journal: [],
     });
 
     const gauges = wrapper.findAll('.patience-left');
@@ -87,6 +92,7 @@ describe('ShopQueue', () => {
         { id: 1, personality: 'Pressé', drink: 'Espresso', patienceMinutes: 6, waitedMinutes: 9 },
       ]),
       status: 'open',
+      journal: [],
     });
 
     expect(wrapper.find('.patience-left').attributes('style')).toContain('width: 0%');

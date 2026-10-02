@@ -8,11 +8,15 @@ import { CashRegister } from '../shop/domain/finance/CashRegister.js';
 import { Inventory } from '../shop/domain/inventory/Inventory.js';
 import { Money } from '../shop/domain/Money.js';
 import { OrderDispatcher } from '../shop/domain/order/OrderDispatcher.js';
+import { Ledger } from '../shop/domain/report/Ledger.js';
+import { PendingRestocks } from '../shop/domain/restock/PendingRestocks.js';
 import { TypeScriptShop } from '../shop/infrastructure/primary/TypeScriptShop.js';
 import { InMemoryCashRegisterRepository } from '../shop/infrastructure/secondary/InMemoryCashRegisterRepository.js';
 import { InMemoryCustomerQueueRepository } from '../shop/infrastructure/secondary/InMemoryCustomerQueueRepository.js';
 import { InMemoryInventoryRepository } from '../shop/infrastructure/secondary/InMemoryInventoryRepository.js';
+import { InMemoryLedgerRepository } from '../shop/infrastructure/secondary/InMemoryLedgerRepository.js';
 import { InMemoryMenuRepository } from '../shop/infrastructure/secondary/InMemoryMenuRepository.js';
+import { InMemoryPendingRestocksRepository } from '../shop/infrastructure/secondary/InMemoryPendingRestocksRepository.js';
 import { InMemoryStaffRepository } from '../shop/infrastructure/secondary/InMemoryStaffRepository.js';
 import { SeededRandomGenerator } from '../shop/infrastructure/secondary/SeededRandomGenerator.js';
 import { createDefaultMenu } from './defaultMenu.js';
@@ -40,6 +44,8 @@ export function createShopModule() {
     ),
     inventoryRepository,
     menuRepository,
+    pendingRestocksRepository: new InMemoryPendingRestocksRepository(new PendingRestocks()),
+    ledgerRepository: new InMemoryLedgerRepository(new Ledger()),
     customerGenerator: new CustomerGenerator(
       random,
       menu.drinks().map((drink) => drink.name),
@@ -47,6 +53,7 @@ export function createShopModule() {
     ),
     orderDispatcher: new OrderDispatcher(),
     random,
+    restockDelayMinutes: config.restockDelayMinutes,
   });
 
   return {

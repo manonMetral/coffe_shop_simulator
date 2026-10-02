@@ -19,6 +19,14 @@ export class InvalidStaffError extends DomainError {}
 
 export class ServerUnavailableError extends DomainError {}
 
+export class InvalidRestockError extends DomainError {}
+
+export class InsufficientFundsError extends DomainError {
+  constructor(requested: number, available: number) {
+    super(`Insufficient funds: ${requested} cents requested, ${available} cents available`);
+  }
+}
+
 export class UnknownIngredientError extends DomainError {
   constructor(ingredient: string) {
     super(`Unknown ingredient: ${ingredient}`);
