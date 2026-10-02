@@ -5,6 +5,16 @@ Application full-stack Node.js + Vue.js (monorepo workspaces npm). Voir `README.
 - `backend/` : Express 5, TypeScript, Vitest + Supertest
 - `frontend/` : Vue 3, Vite, TypeScript, Pinia, Vue Router, Vitest
 
+## Domaine
+
+Simulation autonome : le joueur n'intervient pas. Le backend est autoritaire (clients, assignation, préparation, stock, argent, journées) et le frontend affiche l'état en temps réel via WebSocket (`ws`). Le détail est construit étape par étape ; les règles ci-dessous sont la cible.
+
+- Horloge accélérée et configurable (une journée de 8 h simulées dure 1 h réelle par défaut). L'horloge, le planificateur de ticks et le générateur aléatoire (avec graine) sont des ports, remplacés par des doubles dans les tests : jamais d'attente réelle ni de hasard non maîtrisé.
+- Persistance en mémoire derrière des ports, une seule boutique. Les paramètres (serveurs, caisse, prix, seuils) viennent de la configuration du backend.
+- Prix de vente d'une boisson = coût de revient de sa recette x 1,30 (marge de 30 %).
+- Réassort automatique : alerte sous 100 unités d'un ingrédient ; budget par ingrédient = caisse / nombre d'ingrédients du catalogue ; quantité entre 100 et 1000 unités, dans la limite du budget et de la place restante.
+- Les événements du domaine sont publiés par un port, un adaptateur secondaire les diffuse en WebSocket (message `snapshot` à la connexion, puis messages `event`).
+
 ## Commandes
 
 Node 22.12+ requis (`nvm use`, voir `.nvmrc`).

@@ -4,9 +4,9 @@
 
 Coffee Shop Simulator is a game‑inspired full‑stack application designed to explore Node.js and Vue.js through an engaging and interactive experience.
 
-On the frontend, customers appear randomly, each with their own personality, patience level, and preferred drink. Players assign servers to prepare and deliver orders, manage queues, and keep customers happy.
+Customers appear randomly, each with their own personality, patience level, and preferred drink. Servers, each with their own speed and skills, are assigned automatically to prepare and deliver orders from the queue. There is no player interaction: the frontend is a live, animated view of the coffee shop, with days, a cash register and a daily report.
 
-On the backend, the system handles inventory levels, recipe validation, stock depletion, preparation timing, and special events such as rush hours or low‑stock alerts. Real‑time updates are powered by WebSockets, ensuring the game reacts instantly to backend events.
+On the backend, the system handles inventory levels, recipe validation, stock depletion, preparation timing, and special events such as rush hours or low‑stock alerts. The backend drives the whole simulation, and real‑time updates are pushed to the frontend through WebSockets, so the display reacts instantly to backend events.
 
 The project blends game mechanics with real operational logic, making it an ideal playground for practicing REST API design, WebSocket communication, state management with Pinia, and backend business rules such as stock verification, order workflows, and event broadcasting.
 
