@@ -1,5 +1,6 @@
 import { WebSocket, type WebSocketServer } from 'ws';
 import type { EventPublisher } from '../../domain/EventPublisher.js';
+import type { Logger } from '../../domain/Logger.js';
 import type { SimulationEvent } from '../../domain/SimulationEvent.js';
 import type { SnapshotProvider } from '../../domain/SnapshotProvider.js';
 
@@ -11,8 +12,13 @@ export class WebSocketEventPublisher implements EventPublisher {
   constructor(
     private readonly server: WebSocketServer,
     private readonly snapshotProvider: SnapshotProvider,
+    private readonly logger: Logger,
   ) {
-    server.on('connection', (socket) => void this.sendSnapshot(socket));
+    server.on('connection', (socket) => {
+      // Without a listener, an 'error' event on a socket would crash the process.
+      socket.on('error', (error) => this.logger.error('WebSocket client error', error));
+      void this.sendSnapshot(socket);
+    });
   }
 
   publish(event: SimulationEvent): void {
@@ -25,9 +31,13 @@ export class WebSocketEventPublisher implements EventPublisher {
   }
 
   private async sendSnapshot(socket: WebSocket): Promise<void> {
-    const data = await this.snapshotProvider();
-    if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'snapshot', data }));
+    try {
+      const data = await this.snapshotProvider();
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'snapshot', data }));
+      }
+    } catch (error) {
+      this.logger.error('Sending the snapshot failed', error);
     }
   }
 }
