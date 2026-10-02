@@ -1,5 +1,5 @@
-import type { SimulationEvent } from './SimulationEvent.js';
+import type { BroadcastEvent } from './BroadcastEvent.js';
 
 export interface EventPublisher {
-  publish(event: SimulationEvent): void;
+  publish(event: BroadcastEvent): void;
 }

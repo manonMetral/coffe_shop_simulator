@@ -41,7 +41,14 @@ describe('ShopStatusBar', () => {
     const { wrapper, push } = mountBar();
 
     await push({
-      state: { day: 3, minuteOfDay: 90, time: '09:30', dayLengthMinutes: 480, cashCents: 30000 },
+      state: {
+        day: 3,
+        minuteOfDay: 90,
+        time: '09:30',
+        dayLengthMinutes: 480,
+        cashCents: 30000,
+        queue: [],
+      },
       status: 'open',
     });
 

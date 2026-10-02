@@ -9,6 +9,7 @@ const snapshot: ShopState = {
   time: '08:00',
   dayLengthMinutes: 480,
   cashCents: 30000,
+  queue: [],
 };
 
 function createService() {

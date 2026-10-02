@@ -10,6 +10,7 @@ const snapshot: SimulationSnapshot = {
   time: '08:00',
   dayLengthMinutes: 480,
   cashCents: 30000,
+  queue: [],
 };
 
 const fakeSocket = (readyState: number) =>
@@ -35,7 +36,8 @@ describe('WebSocketEventPublisher', () => {
     const closed = fakeSocket(WebSocket.CLOSED);
     const { publisher } = createPublisher([open, closed]);
 
-    publisher.publish({ type: 'day-started', day: 2 });
+    const event = { type: 'day-started', day: 2 };
+    publisher.publish(event);
 
     expect(open.send).toHaveBeenCalledWith(
       JSON.stringify({ type: 'event', data: { type: 'day-started', day: 2 } }),

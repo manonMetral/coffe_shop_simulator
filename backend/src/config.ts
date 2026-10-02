@@ -59,6 +59,10 @@ export function parseConfig(env: Env) {
     tickIntervalMs: read('TICK_INTERVAL_MS', 1000, integerBetween(1)),
     dayLengthMinutes: read('DAY_LENGTH_MINUTES', 480, integerBetween(1, 24 * 60)),
     dayStartHour: read('DAY_START_HOUR', 8, integerBetween(0, 23)),
+    /** Average number of customers arriving per simulated hour. */
+    customersPerHour: read('CUSTOMERS_PER_HOUR', 20, positiveNumber),
+    /** Same seed, same customers: set it to replay a simulation. Random by default. */
+    randomSeed: read('RANDOM_SEED', Date.now(), integerBetween(0)),
   };
 
   if (problems.length > 0) {

@@ -1,10 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SimulationApplicationService } from '../../../src/simulation/application/SimulationApplicationService.js';
 import { Calendar } from '../../../src/simulation/domain/Calendar.js';
-import type { SimulationEvent } from '../../../src/simulation/domain/SimulationEvent.js';
+import type { BroadcastEvent } from '../../../src/simulation/domain/BroadcastEvent.js';
+import type { CustomerFlow } from '../../../src/simulation/domain/CustomerFlow.js';
 import { InMemoryCalendarRepository } from '../../../src/simulation/infrastructure/secondary/InMemoryCalendarRepository.js';
 
-function createService(options: { cashReader?: { balanceCents: () => Promise<number> } } = {}) {
+function createService(
+  options: {
+    cashReader?: { balanceCents: () => Promise<number> };
+    customerFlow?: CustomerFlow;
+  } = {},
+) {
   const clock = { current: 1_000_000, now: () => clock.current };
   const scheduler = {
     onTick: undefined as (() => void) | undefined,
@@ -16,9 +22,13 @@ function createService(options: { cashReader?: { balanceCents: () => Promise<num
     scheduler.onTick = onTick;
     scheduler.intervalMs = intervalMs;
   });
-  const published: SimulationEvent[] = [];
-  const publisher = { publish: (event: SimulationEvent) => void published.push(event) };
+  const published: BroadcastEvent[] = [];
+  const publisher = { publish: (event: BroadcastEvent) => void published.push(event) };
   const cashReader = options.cashReader ?? { balanceCents: async () => 30000 };
+  const customerFlow: CustomerFlow = options.customerFlow ?? {
+    advance: async () => [],
+    queue: async () => [],
+  };
   const logger = { error: vi.fn() };
   const service = new SimulationApplicationService(
     new InMemoryCalendarRepository(Calendar.start(480, 8)),
@@ -26,6 +36,7 @@ function createService(options: { cashReader?: { balanceCents: () => Promise<num
     scheduler,
     publisher,
     cashReader,
+    customerFlow,
     logger,
     { timeScale: 8, tickIntervalMs: 1000 },
   );
@@ -146,6 +157,55 @@ describe('SimulationApplicationService', () => {
       time: '08:08',
       dayLengthMinutes: 480,
       cashCents: 30000,
+      queue: [],
+    });
+  });
+  describe('customers', () => {
+    it('lets the customers live the simulated time and publishes what happened, after the calendar events', async () => {
+      const advance = vi.fn(async () => [{ type: 'customer-arrived' }, { type: 'queue-updated' }]);
+      const { service, clock, published } = createService({
+        customerFlow: { advance, queue: async () => [] },
+      });
+      service.start();
+
+      clock.current += 60_000;
+      await service.tick();
+
+      expect(advance).toHaveBeenCalledWith(8);
+      expect(published.map((event) => event.type)).toEqual([
+        'clock-tick',
+        'customer-arrived',
+        'queue-updated',
+      ]);
+    });
+
+    it('includes the waiting customers in the snapshot', async () => {
+      const queue = [{ id: 1 }, { id: 2 }];
+      const { service } = createService({
+        customerFlow: { advance: async () => [], queue: async () => queue },
+      });
+
+      expect((await service.getSnapshot()).queue).toEqual(queue);
+    });
+
+    it('logs a failure of the customers without crashing', async () => {
+      const failure = new Error('customers are down');
+      const { service, clock, scheduler, logger } = createService({
+        customerFlow: {
+          advance: async () => {
+            throw failure;
+          },
+          queue: async () => [],
+        },
+      });
+      service.start();
+
+      clock.current += 60_000;
+      scheduler.onTick?.();
+
+      await vi.waitFor(() =>
+        expect(logger.error).toHaveBeenCalledWith('Simulation tick failed', failure),
+      );
     });
   });
 });

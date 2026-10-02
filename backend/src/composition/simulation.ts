@@ -6,6 +6,7 @@ import { ConsoleLogger } from '../simulation/infrastructure/secondary/ConsoleLog
 import { InMemoryCalendarRepository } from '../simulation/infrastructure/secondary/InMemoryCalendarRepository.js';
 import { IntervalTickScheduler } from '../simulation/infrastructure/secondary/IntervalTickScheduler.js';
 import { ShopCashReader } from '../simulation/infrastructure/secondary/ShopCashReader.js';
+import { ShopCustomerFlow } from '../simulation/infrastructure/secondary/ShopCustomerFlow.js';
 import { SystemClock } from '../simulation/infrastructure/secondary/SystemClock.js';
 import { WebSocketEventPublisher } from '../simulation/infrastructure/secondary/WebSocketEventPublisher.js';
 import type { ShopModule } from './shop.js';
@@ -19,6 +20,7 @@ export function createSimulationModule(shop: ShopModule, webSocketServer: WebSoc
     new IntervalTickScheduler(),
     new WebSocketEventPublisher(webSocketServer, () => simulationService.getSnapshot(), logger),
     new ShopCashReader(shop.finance),
+    new ShopCustomerFlow(shop.customers),
     logger,
     { timeScale: config.timeScale, tickIntervalMs: config.tickIntervalMs },
   );

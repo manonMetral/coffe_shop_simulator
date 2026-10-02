@@ -27,5 +27,6 @@ describe('HomeView', () => {
     expect(wrapper.text()).toContain('API : ok');
     expect(shopService.start).toHaveBeenCalledOnce();
     expect(wrapper.find('.status-bar').exists()).toBe(true);
+    expect(wrapper.text()).toContain("File d'attente");
   });
 });

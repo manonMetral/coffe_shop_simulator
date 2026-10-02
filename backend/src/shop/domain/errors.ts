@@ -13,6 +13,8 @@ export class InvalidMenuError extends DomainError {}
 
 export class InvalidInventoryError extends DomainError {}
 
+export class InvalidCustomerFlowError extends DomainError {}
+
 export class UnknownIngredientError extends DomainError {
   constructor(ingredient: string) {
     super(`Unknown ingredient: ${ingredient}`);

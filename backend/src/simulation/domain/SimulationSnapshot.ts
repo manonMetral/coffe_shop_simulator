@@ -5,4 +5,5 @@ export interface SimulationSnapshot {
   readonly time: string;
   readonly dayLengthMinutes: number;
   readonly cashCents: number;
+  readonly queue: readonly object[];
 }
