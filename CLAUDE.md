@@ -30,13 +30,11 @@ Node 22.12+ requis (`nvm use`, voir `.nvmrc`).
 
 ### Versionnement
 
-- À chaque merge sur `main`, la CI incrémente automatiquement la version mineure (ex. `0.1.0` -> `0.2.0`) et crée le tag correspondant.
-- Ne pas modifier la version à la main dans les `package.json`.
+- À chaque merge sur `main`, la CI incrémente automatiquement la version mineure (ex. `v0.1.0` -> `v0.2.0`) en créant le tag et la GitHub Release correspondants.
+- La version de référence est le dernier tag `vX.Y.0`. Les `package.json` ne sont pas modifiés par la CI (aucun commit automatique sur `main`).
 
 ## Mise en œuvre
 
 - `.github/workflows/ci.yml` : typecheck, tests avec couverture et build sur chaque push de branche (hors `main`). Réutilisé par `release.yml`.
-- `.github/workflows/release.yml` : sur `main`, rejoue la CI puis incrémente la version mineure (root et workspaces), commit `chore(release): vX.Y.Z [skip ci]` et tag `vX.Y.Z`.
+- `.github/workflows/release.yml` : sur `main`, rejoue la CI, calcule la prochaine version mineure à partir du dernier tag, puis crée le tag et la GitHub Release (notes générées automatiquement). Utilise le `GITHUB_TOKEN`, sans secret ni contournement de la protection de `main`.
 - Seuils de couverture à 100 % dans `backend/vitest.config.ts` et `frontend/vite.config.ts`.
-
-Reste à faire côté GitHub (hors repo) : protéger `main` (PR obligatoire, check `test` requis) en autorisant `github-actions[bot]` à contourner la protection pour le commit de version.
