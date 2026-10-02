@@ -29,12 +29,13 @@ nvm use
 
 ```bash
 npm install
-cp backend/.env.example backend/.env   # optionnel, valeurs par défaut identiques
 npm run dev
 ```
 
+Le backend lit sa configuration dans les variables d'environnement (liste et valeurs par défaut dans `backend/.env.example`, le fichier n'est pas chargé automatiquement). Exemple : `TIME_SCALE=60 npm run dev` accélère la simulation.
+
 - Frontend : http://localhost:5173 (le proxy Vite redirige `/api` vers le backend)
-- Backend : http://localhost:3000, avec `GET /api/health`, `GET /api/menu` (boissons, recettes, coût et prix de vente en centimes) et `GET /api/inventory` (stock par ingrédient)
+- Backend : http://localhost:3000, avec `GET /api/health`, `GET /api/menu` (boissons, recettes, coût et prix de vente en centimes), `GET /api/inventory` (stock par ingrédient) et un WebSocket sur `/ws` (snapshot à la connexion, puis événements de la simulation)
 
 ## Scripts
 
@@ -52,9 +53,9 @@ npm run dev
 Architecture hexagonale par contexte métier, vérifiée par `arch-unit-ts` (voir `CLAUDE.md`).
 
 ```
-backend/src/    app.ts (composition root), server.ts, config.ts
-                health/ domain, application, infrastructure/{primary,secondary}
+backend/src/    composition/, app.ts, bootstrap.ts (composition root), server.ts, config.ts
+                health/, shop/, simulation/ : domain, application, infrastructure/{primary,secondary}
 backend/tests/  health/ (même découpage que src), tests d'API (Supertest) et d'architecture
-frontend/src/   main.ts (composition root), App.vue, router/
-                health/ domain, application, infrastructure/{primary,secondary}
+frontend/src/   main.ts (composition root), App.vue, router/, views/
+                health/, shop/ : domain, application, infrastructure/{primary,secondary}
 ```

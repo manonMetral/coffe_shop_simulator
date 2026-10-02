@@ -29,7 +29,8 @@ src/<contexte>/
 ```
 
 - Règles : le domaine ne dépend que du domaine ; l'application ne dépend pas de l'infrastructure ; le primaire ne dépend pas du secondaire ; le secondaire ne dépend pas de l'application ; un contexte ne dépend pas du domaine d'un autre.
-- Les dépendances sont assemblées hors des contextes (composition root) : `backend/src/app.ts` et `frontend/src/main.ts`. Côté frontend, le service applicatif est fourni aux composants par `provide`/`inject` (`healthServiceKey`).
+- Les dépendances sont assemblées hors des contextes (composition root) : côté backend `backend/src/composition/` (un module par contexte), `app.ts` et `bootstrap.ts` ; côté frontend `frontend/src/main.ts`, avec les pages qui combinent plusieurs contextes dans `frontend/src/views/`. Côté frontend, les services applicatifs sont fournis aux composants par `provide`/`inject` (`healthServiceKey`, `shopServiceKey`).
+- Backend : un contexte n'appelle jamais l'application ni le domaine d'un autre. Il passe par un port de son domaine, implémenté par un adaptateur secondaire qui appelle un adaptateur primaire dont le nom commence par `TypeScript` dans l'autre contexte (ex. `ShopCashReader` -> `TypeScriptFinance`). Seuls les adaptateurs secondaires et la composition root peuvent appeler un adaptateur `TypeScript*`.
 - Les règles sont vérifiées avec `arch-unit-ts` : `backend/tests/HexagonalArchTest.test.ts` et `frontend/src/HexagonalArchTest.test.ts`. Un nouveau contexte est détecté dès qu'il contient un `package-info.ts` qui étend `BusinessContext`.
 - Les noms du domaine (ingrédients, boissons) sont des enums fixes (`IngredientName`, `DrinkName`) qui servent aussi d'identité : pas d'identifiant en chaîne libre. Ajouter une boisson ou un ingrédient commence par ajouter sa valeur à l'enum.
 - Limite : `arch-unit-ts` n'analyse que les fichiers `.ts`, pas le contenu des `.vue`. Garder les composants Vue minces et placer la logique dans des `.ts` (stores, services).

@@ -1,6 +1,6 @@
-import { createApp } from './app.js';
+import { startServer } from './bootstrap.js';
 import { config } from './config.js';
 
-createApp().listen(config.port, () => {
+startServer(config.port, () => {
   console.log(`Backend listening on http://localhost:${config.port}`);
 });
