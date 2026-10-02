@@ -6,8 +6,12 @@ import type { ShopFlow, ShopSnapshot } from '../../domain/ShopFlow.js';
 export class ShopFlowAdapter implements ShopFlow {
   constructor(private readonly shop: TypeScriptShop) {}
 
-  advance(simulatedMinutes: number): Promise<readonly BroadcastEvent[]> {
-    return this.shop.advance(simulatedMinutes);
+  advance(simulatedMinutes: number, arrivalMultiplier: number): Promise<readonly BroadcastEvent[]> {
+    return this.shop.advance(simulatedMinutes, arrivalMultiplier);
+  }
+
+  closeDay(day: number): Promise<readonly BroadcastEvent[]> {
+    return this.shop.closeDay(day);
   }
 
   snapshot(): Promise<ShopSnapshot> {

@@ -6,6 +6,8 @@ import type { ServerName } from '../staff/ServerName.js';
 /** The preparation of a drink for a customer by a server. */
 export class Order {
   private remaining: number;
+  /** How satisfied the customer is, depending on how long it waited before being served. */
+  readonly satisfactionPercent: number;
 
   constructor(
     readonly id: number,
@@ -15,6 +17,7 @@ export class Order {
     readonly preparationMinutes: number,
   ) {
     this.remaining = preparationMinutes;
+    this.satisfactionPercent = customer.satisfactionPercent();
   }
 
   get drink(): DrinkName {

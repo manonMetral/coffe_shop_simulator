@@ -21,7 +21,7 @@ describe('useShopStore', () => {
       stop: vi.fn(),
     } as unknown as ShopApplicationService);
 
-    expect(store.view).toEqual({ state: null, status: 'connecting' });
+    expect(store.view).toEqual({ state: null, status: 'connecting', journal: [] });
   });
 
   it('follows the views given by the application service', () => {
@@ -30,7 +30,7 @@ describe('useShopStore', () => {
 
     store.start();
     const onChange = service.start.mock.calls[0]?.[0] as (view: ShopView) => void;
-    onChange({ state: null, status: 'open' });
+    onChange({ state: null, status: 'open', journal: [] });
 
     expect(store.view.status).toBe('open');
   });

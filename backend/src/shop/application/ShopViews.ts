@@ -2,7 +2,9 @@ import type { Customer } from '../domain/customer/Customer.js';
 import type { Personality } from '../domain/customer/Personality.js';
 import type { DrinkName } from '../domain/menu/DrinkName.js';
 import type { IngredientName } from '../domain/menu/IngredientName.js';
+import type { Inventory } from '../domain/inventory/Inventory.js';
 import type { Order } from '../domain/order/Order.js';
+import type { DayReport } from '../domain/report/DayReport.js';
 import type { Server } from '../domain/staff/Server.js';
 import type { ServerName } from '../domain/staff/ServerName.js';
 
@@ -29,10 +31,19 @@ export interface ServerView {
   order: OrderView | null;
 }
 
+export interface StockView {
+  ingredient: IngredientName;
+  quantity: number;
+  capacity: number;
+  low: boolean;
+}
+
 export interface ShopSnapshot {
   cashCents: number;
   queue: CustomerView[];
   servers: ServerView[];
+  inventory: StockView[];
+  reports: DayReport[];
 }
 
 export type ShopEvent =
@@ -56,6 +67,16 @@ export type ShopEvent =
       cashCents: number;
     }
   | { type: 'stock-low'; ingredient: IngredientName; remaining: number }
+  | {
+      type: 'restock-ordered';
+      ingredient: IngredientName;
+      quantity: number;
+      costCents: number;
+      cashCents: number;
+    }
+  | { type: 'restock-delivered'; ingredient: IngredientName; quantity: number }
+  | { type: 'inventory-updated'; inventory: StockView[] }
+  | { type: 'day-report'; report: DayReport }
   | { type: 'queue-updated'; queue: CustomerView[] }
   | { type: 'servers-updated'; servers: ServerView[] };
 
@@ -84,3 +105,11 @@ export const toServerView = (server: Server): ServerView => ({
   drinks: server.drinks,
   order: server.order ? toOrderView(server.order) : null,
 });
+
+export const toStockViews = (inventory: Inventory): StockView[] =>
+  inventory.levels().map(({ ingredient, quantity }) => ({
+    ingredient,
+    quantity,
+    capacity: inventory.capacity,
+    low: inventory.isLow(ingredient),
+  }));

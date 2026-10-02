@@ -28,6 +28,11 @@ export class Customer {
     this.waited += minutes;
   }
 
+  /** Share of the patience left when the customer is served, from 0 to 100 percent. */
+  satisfactionPercent(): number {
+    return Math.round(100 * Math.max(0, 1 - this.waited / this.patienceMinutes));
+  }
+
   hasLostPatience(): boolean {
     return this.waited >= this.patienceMinutes;
   }

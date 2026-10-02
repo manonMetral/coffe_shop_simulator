@@ -42,4 +42,17 @@ describe('Customer', () => {
 
     expect(customer.remainingPatienceMinutes).toBe(2);
   });
+
+  it.each([
+    [0, 100],
+    [3, 50],
+    [4.5, 25],
+    [6, 0],
+    [20, 0],
+  ])('after waiting %s minutes out of 6, the satisfaction is %s percent', (waited, expected) => {
+    const customer = rushedCustomer();
+    customer.wait(waited);
+
+    expect(customer.satisfactionPercent()).toBe(expected);
+  });
 });

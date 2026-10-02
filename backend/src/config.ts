@@ -60,10 +60,27 @@ export function parseConfig(env: Env) {
     dayLengthMinutes: read('DAY_LENGTH_MINUTES', 480, integerBetween(1, 24 * 60)),
     dayStartHour: read('DAY_START_HOUR', 8, integerBetween(0, 23)),
     /** Average number of customers arriving per simulated hour. */
+    /** Simulated minutes between the purchase of ingredients and their delivery. */
+    restockDelayMinutes: read('RESTOCK_DELAY_MINUTES', 60, positiveNumber),
+    /** The rush hour starts this many simulated minutes after the shop opens... */
+    rushHourStartMinute: read('RUSH_HOUR_START_MINUTE', 240, integerBetween(0, 24 * 60)),
+    /** ...lasts this long (0 for no rush hour)... */
+    rushHourDurationMinutes: read('RUSH_HOUR_DURATION_MINUTES', 120, integerBetween(0, 24 * 60)),
+    /** ...and makes the customers arrive this many times more often. */
+    rushHourMultiplier: read('RUSH_HOUR_MULTIPLIER', 2.5, positiveNumber),
     customersPerHour: read('CUSTOMERS_PER_HOUR', 20, positiveNumber),
     /** Same seed, same customers: set it to replay a simulation. Random by default. */
     randomSeed: read('RANDOM_SEED', Date.now(), integerBetween(0)),
   };
+
+  if (
+    config.rushHourDurationMinutes > 0 &&
+    config.rushHourStartMinute + config.rushHourDurationMinutes > config.dayLengthMinutes
+  ) {
+    problems.push(
+      `RUSH_HOUR_START_MINUTE + RUSH_HOUR_DURATION_MINUTES must not exceed DAY_LENGTH_MINUTES (${config.dayLengthMinutes})`,
+    );
+  }
 
   if (problems.length > 0) {
     throw new InvalidConfigError(problems);

@@ -33,8 +33,12 @@ function mountServers() {
         cashCents: 30000,
         queue: [],
         servers,
+        inventory: [],
+        reports: [],
+        rushHourMultiplier: 1,
       },
       status: 'open',
+      journal: [],
     };
     await nextTick();
   };

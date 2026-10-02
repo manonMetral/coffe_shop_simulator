@@ -49,8 +49,12 @@ describe('ShopStatusBar', () => {
         cashCents: 30000,
         queue: [],
         servers: [],
+        inventory: [],
+        reports: [],
+        rushHourMultiplier: 1,
       },
       status: 'open',
+      journal: [],
     });
 
     expect(wrapper.text()).toContain('Jour 3');
@@ -62,9 +66,31 @@ describe('ShopStatusBar', () => {
   it('shows when the connection is lost', async () => {
     const { wrapper, push } = mountBar();
 
-    await push({ state: null, status: 'closed' });
+    await push({ state: null, status: 'closed', journal: [] });
 
     expect(wrapper.find('.connection').attributes('data-status')).toBe('closed');
     expect(wrapper.text()).toContain('Déconnecté');
+  });
+
+  it('announces the rush hour', async () => {
+    const { wrapper, push } = mountBar();
+    const state = {
+      day: 1,
+      minuteOfDay: 240,
+      time: '12:00',
+      dayLengthMinutes: 480,
+      rushHourMultiplier: 2.5,
+      cashCents: 30000,
+      queue: [],
+      servers: [],
+      inventory: [],
+      reports: [],
+    };
+
+    await push({ state, status: 'open', journal: [] });
+    expect(wrapper.find('.rush').text()).toBe('Rush hour x2.5');
+
+    await push({ state: { ...state, rushHourMultiplier: 1 }, status: 'open', journal: [] });
+    expect(wrapper.find('.rush').exists()).toBe(false);
   });
 });

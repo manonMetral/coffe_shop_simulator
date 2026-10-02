@@ -24,6 +24,7 @@ export default defineConfig({
         'src/env.d.ts',
         'src/BusinessContext.ts',
         'src/**/package-info.ts',
+        'src/**/testShop.ts',
       ],
       reporter: ['text', 'lcov'],
       thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },

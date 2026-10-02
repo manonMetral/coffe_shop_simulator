@@ -47,4 +47,14 @@ describe('Order', () => {
 
     expect(order.remainingMinutes).toBe(0);
   });
+
+  it('keeps the satisfaction of the customer at the time it is served', () => {
+    const customer = new Customer(3, Personality.GENEROUS, DrinkName.LATTE);
+    customer.wait(7.5);
+
+    const order = new Order(1, customer, ServerName.CHLOE, Money.ofCents(780), 4);
+    customer.wait(5);
+
+    expect(order.satisfactionPercent).toBe(50);
+  });
 });

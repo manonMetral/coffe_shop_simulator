@@ -15,6 +15,10 @@ export class Money {
     return new Money(this.cents + other.cents);
   }
 
+  minus(other: Money): Money {
+    return Money.ofCents(this.cents - other.cents);
+  }
+
   times(quantity: number): Money {
     if (!Number.isInteger(quantity) || quantity < 0) {
       throw new InvalidMoneyError(`Invalid quantity: ${quantity}`);

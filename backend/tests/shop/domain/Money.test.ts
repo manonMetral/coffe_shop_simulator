@@ -35,4 +35,10 @@ describe('Money', () => {
     expect(Money.ofCents(1000).percent(15).cents).toBe(150);
     expect(Money.ofCents(585).percent(10).cents).toBe(59);
   });
+
+  it('subtracts an amount, which cannot make the total negative', () => {
+    expect(Money.ofCents(500).minus(Money.ofCents(200)).cents).toBe(300);
+    expect(Money.ofCents(500).minus(Money.ofCents(500)).cents).toBe(0);
+    expect(() => Money.ofCents(100).minus(Money.ofCents(101))).toThrow(InvalidMoneyError);
+  });
 });

@@ -41,6 +41,9 @@ describe('startServer', () => {
         cashCents: 30000,
         queue: [],
         servers: expect.any(Array),
+        inventory: expect.any(Array),
+        reports: [],
+        rushHourMultiplier: 1,
       },
     });
   });

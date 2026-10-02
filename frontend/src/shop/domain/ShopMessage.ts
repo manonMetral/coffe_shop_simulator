@@ -1,6 +1,8 @@
 import type { Customer, DrinkName } from './Customer';
+import type { DayReport } from './DayReport';
 import type { Server, ServerName } from './Server';
 import type { ShopState } from './ShopState';
+import type { IngredientName, StockLevel } from './Stock';
 
 export type ShopEvent =
   | {
@@ -36,7 +38,24 @@ export type ShopEvent =
       /** Balance of the cash register after the payment. */
       readonly cashCents: number;
     }
-  | { readonly type: 'stock-low'; readonly ingredient: string; readonly remaining: number }
+  | { readonly type: 'stock-low'; readonly ingredient: IngredientName; readonly remaining: number }
+  | {
+      readonly type: 'restock-ordered';
+      readonly ingredient: IngredientName;
+      readonly quantity: number;
+      readonly costCents: number;
+      /** Balance of the cash register after the purchase. */
+      readonly cashCents: number;
+    }
+  | {
+      readonly type: 'restock-delivered';
+      readonly ingredient: IngredientName;
+      readonly quantity: number;
+    }
+  | { readonly type: 'inventory-updated'; readonly inventory: readonly StockLevel[] }
+  | { readonly type: 'rush-hour-started'; readonly multiplier: number }
+  | { readonly type: 'rush-hour-ended' }
+  | { readonly type: 'day-report'; readonly report: DayReport }
   | { readonly type: 'servers-updated'; readonly servers: readonly Server[] };
 
 /** Messages sent by the backend through the WebSocket. */

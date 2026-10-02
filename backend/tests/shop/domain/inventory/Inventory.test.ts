@@ -118,4 +118,57 @@ describe('Inventory', () => {
       ]);
     });
   });
+
+  describe('restock', () => {
+    it('knows how much room is left in the stock', () => {
+      const inventory = Inventory.full([COFFEE, MILK], 1000, 100);
+      inventory.consume(espressoRecipe);
+
+      expect(inventory.spaceLeft(COFFEE)).toBe(2);
+      expect(inventory.spaceLeft(MILK)).toBe(0);
+    });
+
+    it('adds the delivered units to the stock', () => {
+      const inventory = Inventory.full([COFFEE, MILK], 1000, 100);
+      inventory.consume(new Recipe([{ ingredient: COFFEE, quantity: 500 }]));
+
+      inventory.restock(COFFEE, 300);
+
+      expect(inventory.quantityOf(COFFEE)).toBe(800);
+    });
+
+    it('is not low anymore once restocked, so a new alert is possible', () => {
+      const inventory = Inventory.full([COFFEE], 1000, 100);
+      inventory.consume(new Recipe([{ ingredient: COFFEE, quantity: 900 }]));
+      expect(inventory.isLow(COFFEE)).toBe(true);
+
+      inventory.restock(COFFEE, 500);
+      expect(inventory.isLow(COFFEE)).toBe(false);
+
+      expect(inventory.consume(new Recipe([{ ingredient: COFFEE, quantity: 500 }]))).toEqual([
+        { ingredient: COFFEE, remaining: 100 },
+      ]);
+    });
+
+    it.each([0, -3, 1.5])('rejects %s units', (quantity) => {
+      const inventory = fullInventory();
+      inventory.consume(espressoRecipe);
+
+      expect(() => inventory.restock(COFFEE, quantity)).toThrow(InvalidInventoryError);
+    });
+
+    it('cannot store more than the capacity', () => {
+      const inventory = fullInventory();
+      inventory.consume(espressoRecipe);
+
+      expect(() => inventory.restock(COFFEE, 3)).toThrow(
+        'Not enough room to store 3 units of Café',
+      );
+      expect(inventory.quantityOf(COFFEE)).toBe(998);
+    });
+
+    it('rejects an ingredient that is not stocked', () => {
+      expect(() => fullInventory().restock(TEA, 1)).toThrow(UnknownIngredientError);
+    });
+  });
 });

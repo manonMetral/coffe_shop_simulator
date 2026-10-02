@@ -120,4 +120,31 @@ describe('CustomerGenerator', () => {
       expect(new Set(arrivals.map((customer) => customer.drink)).size).toBe(3);
     });
   });
+
+  describe('arrival multiplier', () => {
+    it('makes the customers arrive twice as often when it is 2', () => {
+      const count = (multiplier: number) =>
+        new CustomerGenerator(new SeededRandomGenerator(5), drinks, 20).advance(
+          60 * 200,
+          multiplier,
+        ).length;
+
+      const normal = count(1);
+      const rush = count(2);
+
+      expect(rush / normal).toBeGreaterThan(1.8);
+      expect(rush / normal).toBeLessThan(2.2);
+    });
+
+    it('applies to the delay before the next arrival', () => {
+      const generator = new CustomerGenerator(
+        scripted([drawFor(6), 0, 0, drawFor(100)]),
+        drinks,
+        60,
+      );
+
+      expect(generator.advance(2, 2)).toEqual([]);
+      expect(generator.advance(1, 2)).toHaveLength(1);
+    });
+  });
 });

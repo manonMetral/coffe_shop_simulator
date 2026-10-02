@@ -9,7 +9,7 @@ export const useShopStore = defineStore('shop', () => {
     throw new Error('ShopApplicationService is not provided');
   }
 
-  const view = ref<ShopView>({ state: null, status: 'connecting' });
+  const view = ref<ShopView>({ state: null, status: 'connecting', journal: [] });
 
   const start = () => {
     shopService.start((next) => {

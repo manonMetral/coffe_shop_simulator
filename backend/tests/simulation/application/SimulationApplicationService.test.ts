@@ -5,9 +5,15 @@ import type { BroadcastEvent } from '../../../src/simulation/domain/BroadcastEve
 import type { ShopFlow, ShopSnapshot } from '../../../src/simulation/domain/ShopFlow.js';
 import { InMemoryCalendarRepository } from '../../../src/simulation/infrastructure/secondary/InMemoryCalendarRepository.js';
 
-const emptyShop: ShopSnapshot = { cashCents: 30000, queue: [], servers: [] };
+const emptyShop: ShopSnapshot = {
+  cashCents: 30000,
+  queue: [],
+  servers: [],
+  inventory: [],
+  reports: [],
+};
 
-function createService(options: { shopFlow?: ShopFlow } = {}) {
+function createService(options: { shopFlow?: ShopFlow; calendar?: Calendar } = {}) {
   const clock = { current: 1_000_000, now: () => clock.current };
   const scheduler = {
     onTick: undefined as (() => void) | undefined,
@@ -23,11 +29,12 @@ function createService(options: { shopFlow?: ShopFlow } = {}) {
   const publisher = { publish: (event: BroadcastEvent) => void published.push(event) };
   const shopFlow: ShopFlow = options.shopFlow ?? {
     advance: async () => [],
+    closeDay: async () => [],
     snapshot: async () => emptyShop,
   };
   const logger = { error: vi.fn() };
   const service = new SimulationApplicationService(
-    new InMemoryCalendarRepository(Calendar.start(480, 8)),
+    new InMemoryCalendarRepository(options.calendar ?? Calendar.start(480, 8)),
     clock,
     scheduler,
     publisher,
@@ -154,20 +161,23 @@ describe('SimulationApplicationService', () => {
       cashCents: 30000,
       queue: [],
       servers: [],
+      inventory: [],
+      reports: [],
+      rushHourMultiplier: 1,
     });
   });
   describe('shop', () => {
     it('lets the shop live the simulated time and publishes what happened, after the calendar events', async () => {
       const advance = vi.fn(async () => [{ type: 'order-started' }, { type: 'queue-updated' }]);
       const { service, clock, published } = createService({
-        shopFlow: { advance, snapshot: async () => emptyShop },
+        shopFlow: { advance, closeDay: async () => [], snapshot: async () => emptyShop },
       });
       service.start();
 
       clock.current += 60_000;
       await service.tick();
 
-      expect(advance).toHaveBeenCalledWith(8);
+      expect(advance).toHaveBeenCalledWith(8, 1);
       expect(published.map((event) => event.type)).toEqual([
         'clock-tick',
         'order-started',
@@ -175,14 +185,16 @@ describe('SimulationApplicationService', () => {
       ]);
     });
 
-    it('includes the cash, the waiting customers and the servers in the snapshot', async () => {
+    it('includes the cash, the queue, the servers, the stock and the reports in the snapshot', async () => {
       const shop: ShopSnapshot = {
         cashCents: 12345,
         queue: [{ id: 1 }],
         servers: [{ name: 'Alice' }],
+        inventory: [{ ingredient: 'Café' }],
+        reports: [{ day: 1 }],
       };
       const { service } = createService({
-        shopFlow: { advance: async () => [], snapshot: async () => shop },
+        shopFlow: { advance: async () => [], closeDay: async () => [], snapshot: async () => shop },
       });
 
       expect(await service.getSnapshot()).toMatchObject(shop);
@@ -195,6 +207,7 @@ describe('SimulationApplicationService', () => {
           advance: async () => {
             throw failure;
           },
+          closeDay: async () => [],
           snapshot: async () => emptyShop,
         },
       });
@@ -206,6 +219,88 @@ describe('SimulationApplicationService', () => {
       await vi.waitFor(() =>
         expect(logger.error).toHaveBeenCalledWith('Simulation tick failed', failure),
       );
+    });
+  });
+
+  describe('rush hours', () => {
+    const rushCalendar = () =>
+      Calendar.start(480, 8, [{ startMinute: 8, durationMinutes: 10, multiplier: 3 }]);
+
+    it('tells the shop how much more often the customers arrive during the rush hour', async () => {
+      const advance = vi.fn(async (_minutes: number, _arrivalMultiplier: number) => []);
+      const shopFlow = { advance, closeDay: async () => [], snapshot: async () => emptyShop };
+      const { service, clock } = createService({ shopFlow, calendar: rushCalendar() });
+      service.start();
+
+      clock.current += 60_000; // 8 simulated minutes: the rush hour starts at the end of this tick
+      await service.tick();
+      clock.current += 15_000; // 2 simulated minutes, inside the rush hour
+      await service.tick();
+
+      expect(advance.mock.calls.map((call) => call[1])).toEqual([1, 3]);
+    });
+
+    it('announces the start and the end of the rush hour to the clients', async () => {
+      const { service, clock, published } = createService({ calendar: rushCalendar() });
+      service.start();
+
+      clock.current += 60_000;
+      await service.tick();
+      clock.current += 75_000; // 10 more simulated minutes: the rush hour is over
+      await service.tick();
+
+      expect(published.map((event) => event.type)).toEqual([
+        'rush-hour-started',
+        'clock-tick',
+        'rush-hour-ended',
+        'clock-tick',
+      ]);
+    });
+
+    it('shows the rush hour in the snapshot', async () => {
+      const { service, clock } = createService({ calendar: rushCalendar() });
+      service.start();
+      clock.current += 60_000;
+      await service.tick();
+
+      expect((await service.getSnapshot()).rushHourMultiplier).toBe(3);
+    });
+  });
+
+  describe('end of the day', () => {
+    it('closes the accounts of the shop when a day ends and publishes the report after the other events', async () => {
+      const closeDay = vi.fn(async (day: number) => [{ type: 'day-report', day }]);
+      const shopFlow = {
+        advance: async () => [{ type: 'queue-updated' }],
+        closeDay,
+        snapshot: async () => emptyShop,
+      };
+      const { service, clock, published } = createService({ shopFlow });
+      service.start();
+
+      clock.current += 3_600_000; // a whole day
+      await service.tick();
+
+      expect(closeDay).toHaveBeenCalledExactlyOnceWith(1);
+      expect(published.map((event) => event.type)).toEqual([
+        'day-ended',
+        'day-started',
+        'clock-tick',
+        'queue-updated',
+        'day-report',
+      ]);
+    });
+
+    it('does not close any accounts during the day', async () => {
+      const closeDay = vi.fn(async () => []);
+      const shopFlow = { advance: async () => [], closeDay, snapshot: async () => emptyShop };
+      const { service, clock } = createService({ shopFlow });
+      service.start();
+
+      clock.current += 60_000;
+      await service.tick();
+
+      expect(closeDay).not.toHaveBeenCalled();
     });
   });
 });

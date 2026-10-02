@@ -47,6 +47,24 @@ export class Inventory {
     return quantity;
   }
 
+  /** How many units can still be stored before the ingredient is at full capacity. */
+  spaceLeft(ingredient: IngredientName): number {
+    return this.capacity - this.quantityOf(ingredient);
+  }
+
+  /** Adds delivered units to the stock, which cannot exceed the capacity. */
+  restock(ingredient: IngredientName, quantity: number): void {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new InvalidInventoryError(`Invalid quantity to restock: ${quantity}`);
+    }
+    if (quantity > this.spaceLeft(ingredient)) {
+      throw new InvalidInventoryError(
+        `Not enough room to store ${quantity} units of ${ingredient}`,
+      );
+    }
+    this.quantities.set(ingredient, this.quantityOf(ingredient) + quantity);
+  }
+
   isLow(ingredient: IngredientName): boolean {
     return this.quantityOf(ingredient) <= this.alertThreshold;
   }

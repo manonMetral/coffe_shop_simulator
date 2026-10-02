@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { applyEvent } from './applyEvent';
 import type { Customer } from './Customer';
+import type { DayReport } from './DayReport';
 import type { Server } from './Server';
+import type { StockLevel } from './Stock';
 import type { ShopState } from './ShopState';
 
 const rushed: Customer = {
@@ -40,6 +42,9 @@ const state: ShopState = {
   cashCents: 30000,
   queue: [],
   servers: [],
+  inventory: [],
+  reports: [],
+  rushHourMultiplier: 1,
 };
 
 describe('applyEvent', () => {
@@ -111,7 +116,57 @@ describe('applyEvent', () => {
   it.each([
     { type: 'order-started', orderId: 1, customerId: 1, drink: 'Espresso', server: 'Alice' },
     { type: 'stock-low', ingredient: 'Café', remaining: 100 },
+    { type: 'restock-delivered', ingredient: 'Café', quantity: 250 },
   ] as const)('keeps the state on $type', (event) => {
     expect(applyEvent(state, event)).toBe(state);
+  });
+
+  it('shows the new balance of the cash register when ingredients are bought', () => {
+    const bought = applyEvent(state, {
+      type: 'restock-ordered',
+      ingredient: 'Café',
+      quantity: 250,
+      costCents: 50000,
+      cashCents: 50000,
+    });
+
+    expect(bought.cashCents).toBe(50000);
+  });
+
+  it('replaces the stock with the one sent by the backend', () => {
+    const inventory: StockLevel[] = [
+      { ingredient: 'Café', quantity: 90, capacity: 1000, low: true },
+    ];
+
+    expect(applyEvent(state, { type: 'inventory-updated', inventory }).inventory).toEqual(
+      inventory,
+    );
+  });
+
+  it('knows when a rush hour starts and ends', () => {
+    const rush = applyEvent(state, { type: 'rush-hour-started', multiplier: 2.5 });
+    expect(rush.rushHourMultiplier).toBe(2.5);
+
+    expect(applyEvent(rush, { type: 'rush-hour-ended' }).rushHourMultiplier).toBe(1);
+  });
+
+  it('adds the report of a day that is over to the previous ones', () => {
+    const report = (day: number): DayReport => ({
+      day,
+      salesCents: 1,
+      tipsCents: 0,
+      restockCostCents: 0,
+      profitCents: 1,
+      customersServed: 1,
+      customersLostPatience: 0,
+      customersLostOutOfStock: 0,
+      averageSatisfactionPercent: 100,
+      closingCashCents: 30001,
+    });
+    const first = applyEvent(state, { type: 'day-report', report: report(1) });
+
+    expect(
+      applyEvent(first, { type: 'day-report', report: report(2) }).reports.map((r) => r.day),
+    ).toEqual([1, 2]);
   });
 });

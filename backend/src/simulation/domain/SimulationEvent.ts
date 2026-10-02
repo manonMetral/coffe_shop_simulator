@@ -15,4 +15,14 @@ export interface DayEnded {
   readonly day: number;
 }
 
-export type SimulationEvent = ClockTicked | DayStarted | DayEnded;
+export interface RushHourStarted {
+  readonly type: 'rush-hour-started';
+  /** How many times more often the customers arrive. */
+  readonly multiplier: number;
+}
+
+export interface RushHourEnded {
+  readonly type: 'rush-hour-ended';
+}
+
+export type SimulationEvent = ClockTicked | DayStarted | DayEnded | RushHourStarted | RushHourEnded;

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useHealthStore } from '../health/infrastructure/primary/useHealthStore';
+import ShopInventory from '../shop/infrastructure/primary/ShopInventory.vue';
+import ShopJournal from '../shop/infrastructure/primary/ShopJournal.vue';
 import ShopQueue from '../shop/infrastructure/primary/ShopQueue.vue';
+import ShopReports from '../shop/infrastructure/primary/ShopReports.vue';
 import ShopServers from '../shop/infrastructure/primary/ShopServers.vue';
 import ShopStatusBar from '../shop/infrastructure/primary/ShopStatusBar.vue';
 
@@ -14,5 +17,8 @@ onMounted(() => health.check());
   <h1>Coffee Shop Simulator ☕</h1>
   <ShopServers />
   <ShopQueue />
+  <ShopInventory />
+  <ShopReports />
+  <ShopJournal />
   <p>API : {{ health.status }}</p>
 </template>
