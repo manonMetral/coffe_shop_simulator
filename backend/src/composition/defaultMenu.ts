@@ -1,10 +1,10 @@
-import { Money } from '../../domain/Money.js';
-import type { Drink } from '../../domain/menu/Drink.js';
-import { DrinkName } from '../../domain/menu/DrinkName.js';
-import type { Ingredient } from '../../domain/menu/Ingredient.js';
-import { IngredientName } from '../../domain/menu/IngredientName.js';
-import { Menu } from '../../domain/menu/Menu.js';
-import { Recipe } from '../../domain/menu/Recipe.js';
+import { Money } from '../shop/domain/Money.js';
+import type { Drink } from '../shop/domain/menu/Drink.js';
+import { DrinkName } from '../shop/domain/menu/DrinkName.js';
+import type { Ingredient } from '../shop/domain/menu/Ingredient.js';
+import { IngredientName } from '../shop/domain/menu/IngredientName.js';
+import { Menu } from '../shop/domain/menu/Menu.js';
+import { Recipe } from '../shop/domain/menu/Recipe.js';
 
 const ingredients: Ingredient[] = [
   { name: IngredientName.COFFEE, unitPrice: Money.ofCents(200) },

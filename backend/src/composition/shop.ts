@@ -6,7 +6,7 @@ import { CashRegister } from '../shop/domain/finance/CashRegister.js';
 import { Inventory } from '../shop/domain/inventory/Inventory.js';
 import { Money } from '../shop/domain/Money.js';
 import { TypeScriptFinance } from '../shop/infrastructure/primary/TypeScriptFinance.js';
-import { createDefaultMenu } from '../shop/infrastructure/secondary/DefaultCatalog.js';
+import { createDefaultMenu } from './defaultMenu.js';
 import { InMemoryCashRegisterRepository } from '../shop/infrastructure/secondary/InMemoryCashRegisterRepository.js';
 import { InMemoryInventoryRepository } from '../shop/infrastructure/secondary/InMemoryInventoryRepository.js';
 import { InMemoryMenuRepository } from '../shop/infrastructure/secondary/InMemoryMenuRepository.js';
