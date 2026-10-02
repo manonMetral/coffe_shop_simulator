@@ -87,6 +87,21 @@ describe('HexagonalArchTest', () => {
   });
 
   describe('Infrastructure', () => {
+    it('primary TypeScript adapters should only be called from secondary adapters or the composition root', () => {
+      classes()
+        .that()
+        .resideInAPackage('..primary..')
+        .and()
+        .haveSimpleNameStartingWith('TypeScript')
+        .should()
+        .onlyHaveDependentClassesThat()
+        .resideInAnyPackage('..secondary..', '..composition..')
+        .because(
+          "To interact between two contexts, a secondary adapter of context 'A' calls a primary TypeScript adapter (name starting with 'TypeScript') of context 'B'",
+        )
+        .check(srcProject.allClasses());
+    });
+
     it('primary should not depend on secondary', () => {
       noClasses()
         .that()
