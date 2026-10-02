@@ -6,6 +6,7 @@ export interface DrinkView {
   name: DrinkName;
   costCents: number;
   priceCents: number;
+  preparationMinutes: number;
   recipe: { ingredient: IngredientName; quantity: number }[];
 }
 
@@ -18,6 +19,7 @@ export class MenuApplicationService {
       name: drink.name,
       costCents: menu.costOf(drink.name).cents,
       priceCents: menu.priceOf(drink.name).cents,
+      preparationMinutes: drink.preparationMinutes,
       recipe: drink.recipe.items.map(({ ingredient, quantity }) => ({ ingredient, quantity })),
     }));
   }

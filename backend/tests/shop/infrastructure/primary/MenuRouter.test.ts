@@ -12,6 +12,7 @@ describe('GET /api/menu', () => {
       name: 'Espresso',
       costCents: 600,
       priceCents: 780,
+      preparationMinutes: 2,
       recipe: [
         { ingredient: 'Café', quantity: 2 },
         { ingredient: 'Eau', quantity: 1 },

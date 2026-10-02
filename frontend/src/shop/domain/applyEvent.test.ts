@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyEvent } from './applyEvent';
 import type { Customer } from './Customer';
+import type { Server } from './Server';
 import type { ShopState } from './ShopState';
 
 const rushed: Customer = {
@@ -18,6 +19,19 @@ const relaxed: Customer = {
   waitedMinutes: 3,
 };
 
+const alice: Server = {
+  name: 'Alice',
+  speed: 1,
+  drinks: ['Espresso', 'Latte'],
+  order: {
+    orderId: 1,
+    customerId: 1,
+    drink: 'Espresso',
+    preparationMinutes: 2,
+    remainingMinutes: 1,
+  },
+};
+
 const state: ShopState = {
   day: 1,
   minuteOfDay: 10,
@@ -25,6 +39,7 @@ const state: ShopState = {
   dayLengthMinutes: 480,
   cashCents: 30000,
   queue: [],
+  servers: [],
 };
 
 describe('applyEvent', () => {
@@ -70,5 +85,33 @@ describe('applyEvent', () => {
     expect(applyEvent(queued, { type: 'queue-updated', queue: [relaxed] }).queue).toEqual([
       relaxed,
     ]);
+  });
+
+  it('shows the new balance of the cash register when a drink is delivered', () => {
+    const delivered = applyEvent(state, {
+      type: 'order-delivered',
+      orderId: 1,
+      customerId: 1,
+      drink: 'Espresso',
+      server: 'Alice',
+      priceCents: 520,
+      tipCents: 78,
+      cashCents: 30598,
+    });
+
+    expect(delivered.cashCents).toBe(30598);
+  });
+
+  it('replaces the servers with the ones sent by the backend', () => {
+    expect(applyEvent(state, { type: 'servers-updated', servers: [alice] }).servers).toEqual([
+      alice,
+    ]);
+  });
+
+  it.each([
+    { type: 'order-started', orderId: 1, customerId: 1, drink: 'Espresso', server: 'Alice' },
+    { type: 'stock-low', ingredient: 'Café', remaining: 100 },
+  ] as const)('keeps the state on $type', (event) => {
+    expect(applyEvent(state, event)).toBe(state);
   });
 });

@@ -44,10 +44,20 @@ describe('Menu', () => {
     const tea = {
       name: DrinkName.TEA,
       recipe: new Recipe([{ ingredient: IngredientName.TEA, quantity: 1 }]),
+      preparationMinutes: 3,
     };
 
     expect(() => new Menu([coffee], [tea])).toThrow(UnknownIngredientError);
   });
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    'rejects a preparation time of %s minutes',
+    (minutes) => {
+      const tooQuick = { ...espresso, preparationMinutes: minutes };
+
+      expect(() => new Menu([coffee], [tooQuick])).toThrow(InvalidMenuError);
+    },
+  );
 
   it('computes the cost of a drink from its recipe', () => {
     const menu = createTestMenu();

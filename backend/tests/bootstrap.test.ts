@@ -40,6 +40,7 @@ describe('startServer', () => {
         dayLengthMinutes: 480,
         cashCents: 30000,
         queue: [],
+        servers: expect.any(Array),
       },
     });
   });

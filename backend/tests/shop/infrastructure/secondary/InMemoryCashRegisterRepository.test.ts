@@ -9,4 +9,13 @@ describe('InMemoryCashRegisterRepository', () => {
 
     expect(await new InMemoryCashRegisterRepository(cashRegister).get()).toBe(cashRegister);
   });
+
+  it('replaces the cash register on save', async () => {
+    const repository = new InMemoryCashRegisterRepository(new CashRegister(Money.ofCents(100)));
+    const other = new CashRegister(Money.ofCents(200));
+
+    await repository.save(other);
+
+    expect(await repository.get()).toBe(other);
+  });
 });

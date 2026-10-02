@@ -33,4 +33,13 @@ describe('Customer', () => {
     customer.wait(0.1);
     expect(customer.hasLostPatience()).toBe(true);
   });
+
+  it('gets more urgent as it waits', () => {
+    const customer = rushedCustomer();
+    expect(customer.remainingPatienceMinutes).toBe(6);
+
+    customer.wait(4);
+
+    expect(customer.remainingPatienceMinutes).toBe(2);
+  });
 });

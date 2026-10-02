@@ -1,21 +1,22 @@
 import { config } from '../config.js';
-import { CustomerApplicationService } from '../shop/application/CustomerApplicationService.js';
-import { FinanceApplicationService } from '../shop/application/FinanceApplicationService.js';
-import { InventoryApplicationService } from '../shop/application/InventoryApplicationService.js';
 import { MenuApplicationService } from '../shop/application/MenuApplicationService.js';
+import { InventoryApplicationService } from '../shop/application/InventoryApplicationService.js';
+import { ShopApplicationService } from '../shop/application/ShopApplicationService.js';
 import { CustomerGenerator } from '../shop/domain/customer/CustomerGenerator.js';
 import { CustomerQueue } from '../shop/domain/customer/CustomerQueue.js';
 import { CashRegister } from '../shop/domain/finance/CashRegister.js';
 import { Inventory } from '../shop/domain/inventory/Inventory.js';
 import { Money } from '../shop/domain/Money.js';
-import { TypeScriptCustomers } from '../shop/infrastructure/primary/TypeScriptCustomers.js';
-import { TypeScriptFinance } from '../shop/infrastructure/primary/TypeScriptFinance.js';
-import { createDefaultMenu } from './defaultMenu.js';
-import { InMemoryCustomerQueueRepository } from '../shop/infrastructure/secondary/InMemoryCustomerQueueRepository.js';
-import { SeededRandomGenerator } from '../shop/infrastructure/secondary/SeededRandomGenerator.js';
+import { OrderDispatcher } from '../shop/domain/order/OrderDispatcher.js';
+import { TypeScriptShop } from '../shop/infrastructure/primary/TypeScriptShop.js';
 import { InMemoryCashRegisterRepository } from '../shop/infrastructure/secondary/InMemoryCashRegisterRepository.js';
+import { InMemoryCustomerQueueRepository } from '../shop/infrastructure/secondary/InMemoryCustomerQueueRepository.js';
 import { InMemoryInventoryRepository } from '../shop/infrastructure/secondary/InMemoryInventoryRepository.js';
 import { InMemoryMenuRepository } from '../shop/infrastructure/secondary/InMemoryMenuRepository.js';
+import { InMemoryStaffRepository } from '../shop/infrastructure/secondary/InMemoryStaffRepository.js';
+import { SeededRandomGenerator } from '../shop/infrastructure/secondary/SeededRandomGenerator.js';
+import { createDefaultMenu } from './defaultMenu.js';
+import { createDefaultStaff } from './defaultStaff.js';
 
 /** Wires the shop bounded context. */
 export function createShopModule() {
@@ -28,24 +29,31 @@ export function createShopModule() {
       config.lowStockThreshold,
     ),
   );
-  const cashRegisterRepository = new InMemoryCashRegisterRepository(
-    new CashRegister(Money.ofCents(config.initialCashCents)),
-  );
+  // One generator for the customers and the tips: a seed replays the whole simulation.
+  const random = new SeededRandomGenerator(config.randomSeed);
 
-  const customerService = new CustomerApplicationService(
-    new InMemoryCustomerQueueRepository(new CustomerQueue()),
-    new CustomerGenerator(
-      new SeededRandomGenerator(config.randomSeed),
+  const shopService = new ShopApplicationService({
+    queueRepository: new InMemoryCustomerQueueRepository(new CustomerQueue()),
+    staffRepository: new InMemoryStaffRepository(createDefaultStaff()),
+    cashRegisterRepository: new InMemoryCashRegisterRepository(
+      new CashRegister(Money.ofCents(config.initialCashCents)),
+    ),
+    inventoryRepository,
+    menuRepository,
+    customerGenerator: new CustomerGenerator(
+      random,
       menu.drinks().map((drink) => drink.name),
       config.customersPerHour,
     ),
-  );
+    orderDispatcher: new OrderDispatcher(),
+    random,
+  });
 
   return {
     menuService: new MenuApplicationService(menuRepository),
     inventoryService: new InventoryApplicationService(inventoryRepository, menuRepository),
-    finance: new TypeScriptFinance(new FinanceApplicationService(cashRegisterRepository)),
-    customers: new TypeScriptCustomers(customerService),
+    shopService,
+    shop: new TypeScriptShop(shopService),
   };
 }
 

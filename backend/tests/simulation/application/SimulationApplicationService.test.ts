@@ -2,15 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SimulationApplicationService } from '../../../src/simulation/application/SimulationApplicationService.js';
 import { Calendar } from '../../../src/simulation/domain/Calendar.js';
 import type { BroadcastEvent } from '../../../src/simulation/domain/BroadcastEvent.js';
-import type { CustomerFlow } from '../../../src/simulation/domain/CustomerFlow.js';
+import type { ShopFlow, ShopSnapshot } from '../../../src/simulation/domain/ShopFlow.js';
 import { InMemoryCalendarRepository } from '../../../src/simulation/infrastructure/secondary/InMemoryCalendarRepository.js';
 
-function createService(
-  options: {
-    cashReader?: { balanceCents: () => Promise<number> };
-    customerFlow?: CustomerFlow;
-  } = {},
-) {
+const emptyShop: ShopSnapshot = { cashCents: 30000, queue: [], servers: [] };
+
+function createService(options: { shopFlow?: ShopFlow } = {}) {
   const clock = { current: 1_000_000, now: () => clock.current };
   const scheduler = {
     onTick: undefined as (() => void) | undefined,
@@ -24,10 +21,9 @@ function createService(
   });
   const published: BroadcastEvent[] = [];
   const publisher = { publish: (event: BroadcastEvent) => void published.push(event) };
-  const cashReader = options.cashReader ?? { balanceCents: async () => 30000 };
-  const customerFlow: CustomerFlow = options.customerFlow ?? {
+  const shopFlow: ShopFlow = options.shopFlow ?? {
     advance: async () => [],
-    queue: async () => [],
+    snapshot: async () => emptyShop,
   };
   const logger = { error: vi.fn() };
   const service = new SimulationApplicationService(
@@ -35,8 +31,7 @@ function createService(
     clock,
     scheduler,
     publisher,
-    cashReader,
-    customerFlow,
+    shopFlow,
     logger,
     { timeScale: 8, tickIntervalMs: 1000 },
   );
@@ -158,13 +153,14 @@ describe('SimulationApplicationService', () => {
       dayLengthMinutes: 480,
       cashCents: 30000,
       queue: [],
+      servers: [],
     });
   });
-  describe('customers', () => {
-    it('lets the customers live the simulated time and publishes what happened, after the calendar events', async () => {
-      const advance = vi.fn(async () => [{ type: 'customer-arrived' }, { type: 'queue-updated' }]);
+  describe('shop', () => {
+    it('lets the shop live the simulated time and publishes what happened, after the calendar events', async () => {
+      const advance = vi.fn(async () => [{ type: 'order-started' }, { type: 'queue-updated' }]);
       const { service, clock, published } = createService({
-        customerFlow: { advance, queue: async () => [] },
+        shopFlow: { advance, snapshot: async () => emptyShop },
       });
       service.start();
 
@@ -174,28 +170,32 @@ describe('SimulationApplicationService', () => {
       expect(advance).toHaveBeenCalledWith(8);
       expect(published.map((event) => event.type)).toEqual([
         'clock-tick',
-        'customer-arrived',
+        'order-started',
         'queue-updated',
       ]);
     });
 
-    it('includes the waiting customers in the snapshot', async () => {
-      const queue = [{ id: 1 }, { id: 2 }];
+    it('includes the cash, the waiting customers and the servers in the snapshot', async () => {
+      const shop: ShopSnapshot = {
+        cashCents: 12345,
+        queue: [{ id: 1 }],
+        servers: [{ name: 'Alice' }],
+      };
       const { service } = createService({
-        customerFlow: { advance: async () => [], queue: async () => queue },
+        shopFlow: { advance: async () => [], snapshot: async () => shop },
       });
 
-      expect((await service.getSnapshot()).queue).toEqual(queue);
+      expect(await service.getSnapshot()).toMatchObject(shop);
     });
 
-    it('logs a failure of the customers without crashing', async () => {
-      const failure = new Error('customers are down');
+    it('logs a failure of the shop without crashing', async () => {
+      const failure = new Error('the shop is down');
       const { service, clock, scheduler, logger } = createService({
-        customerFlow: {
+        shopFlow: {
           advance: async () => {
             throw failure;
           },
-          queue: async () => [],
+          snapshot: async () => emptyShop,
         },
       });
       service.start();

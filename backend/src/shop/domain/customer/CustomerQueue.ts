@@ -12,6 +12,10 @@ export class CustomerQueue {
     this.waiting.push(customer);
   }
 
+  remove(customer: Customer): void {
+    this.waiting = this.waiting.filter((waiting) => waiting !== customer);
+  }
+
   /** Makes everyone wait, and returns the customers who lost patience and left the queue. */
   wait(minutes: number): Customer[] {
     for (const customer of this.waiting) {
