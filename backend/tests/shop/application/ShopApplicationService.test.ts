@@ -119,6 +119,7 @@ describe('ShopApplicationService', () => {
       expect(snapshot.servers[0]?.order).toEqual({
         orderId: 1,
         customerId: 1,
+        personality: 'Décontracté',
         drink: 'Espresso',
         preparationMinutes: 2,
         remainingMinutes: 2,

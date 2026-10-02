@@ -1,4 +1,4 @@
-import type { DrinkName } from './Customer';
+import type { DrinkName, Personality } from './Customer';
 
 export type ServerName = 'Alice' | 'Bob' | 'Chloé';
 
@@ -6,6 +6,7 @@ export type ServerName = 'Alice' | 'Bob' | 'Chloé';
 export interface ServerOrder {
   readonly orderId: number;
   readonly customerId: number;
+  readonly personality: Personality;
   readonly drink: DrinkName;
   /** Simulated minutes the preparation takes for this server. */
   readonly preparationMinutes: number;
