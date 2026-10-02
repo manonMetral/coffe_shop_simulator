@@ -19,6 +19,7 @@ export interface CustomerView {
 export interface OrderView {
   orderId: number;
   customerId: number;
+  personality: Personality;
   drink: DrinkName;
   preparationMinutes: number;
   remainingMinutes: number;
@@ -94,6 +95,7 @@ export const toCustomerView = (customer: Customer): CustomerView => ({
 const toOrderView = (order: Order): OrderView => ({
   orderId: order.id,
   customerId: order.customer.id,
+  personality: order.customer.personality,
   drink: order.drink,
   preparationMinutes: round(order.preparationMinutes),
   remainingMinutes: round(order.remainingMinutes),

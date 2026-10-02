@@ -28,6 +28,7 @@ const alice: Server = {
   order: {
     orderId: 1,
     customerId: 1,
+    personality: 'Pressé',
     drink: 'Espresso',
     preparationMinutes: 2,
     remainingMinutes: 1,
@@ -114,7 +115,14 @@ describe('applyEvent', () => {
   });
 
   it.each([
-    { type: 'order-started', orderId: 1, customerId: 1, drink: 'Espresso', server: 'Alice' },
+    {
+      type: 'order-started',
+      orderId: 1,
+      customerId: 1,
+      personality: 'Pressé',
+      drink: 'Espresso',
+      server: 'Alice',
+    },
     { type: 'stock-low', ingredient: 'Café', remaining: 100 },
     { type: 'restock-delivered', ingredient: 'Café', quantity: 250 },
   ] as const)('keeps the state on $type', (event) => {

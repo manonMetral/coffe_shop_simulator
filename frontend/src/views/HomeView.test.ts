@@ -29,6 +29,7 @@ describe('HomeView', () => {
     expect(wrapper.find('.status-bar').exists()).toBe(true);
     expect(wrapper.text()).toContain("File d'attente");
     expect(wrapper.text()).toContain('Serveurs');
+    expect(wrapper.find('.scene').exists()).toBe(true);
     for (const title of ['Stock', 'Bilans des journées', 'Journal']) {
       expect(wrapper.text()).toContain(title);
     }

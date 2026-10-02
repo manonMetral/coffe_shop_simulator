@@ -13,7 +13,14 @@ const busy: Server = {
   name: 'Bob',
   speed: 1.5,
   drinks: ['Espresso', 'Latte'],
-  order: { orderId: 3, customerId: 12, drink: 'Latte', preparationMinutes: 4, remainingMinutes: 1 },
+  order: {
+    orderId: 3,
+    customerId: 12,
+    personality: 'Pressé',
+    drink: 'Latte',
+    preparationMinutes: 4,
+    remainingMinutes: 1,
+  },
 };
 
 function mountServers() {
