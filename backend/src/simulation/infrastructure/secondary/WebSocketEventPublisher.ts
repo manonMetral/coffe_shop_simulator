@@ -1,7 +1,7 @@
 import { WebSocket, type WebSocketServer } from 'ws';
 import type { EventPublisher } from '../../domain/EventPublisher.js';
 import type { Logger } from '../../domain/Logger.js';
-import type { SimulationEvent } from '../../domain/SimulationEvent.js';
+import type { BroadcastEvent } from '../../domain/BroadcastEvent.js';
 import type { SnapshotProvider } from '../../domain/SnapshotProvider.js';
 
 /**
@@ -21,7 +21,7 @@ export class WebSocketEventPublisher implements EventPublisher {
     });
   }
 
-  publish(event: SimulationEvent): void {
+  publish(event: BroadcastEvent): void {
     const message = JSON.stringify({ type: 'event', data: event });
     for (const client of this.server.clients) {
       if (client.readyState === WebSocket.OPEN) {

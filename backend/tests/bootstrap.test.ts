@@ -33,7 +33,35 @@ describe('startServer', () => {
     );
     expect(message).toEqual({
       type: 'snapshot',
-      data: { day: 1, minuteOfDay: 0, time: '08:00', dayLengthMinutes: 480, cashCents: 30000 },
+      data: {
+        day: 1,
+        minuteOfDay: 0,
+        time: '08:00',
+        dayLengthMinutes: 480,
+        cashCents: 30000,
+        queue: [],
+      },
     });
   });
+
+  it('sends the state of the queue at every tick', async () => {
+    const listening = new Promise<void>((resolve) => {
+      server = startServer(0, resolve);
+    });
+    await listening;
+    const { port } = server?.address() as AddressInfo;
+    const socket = new WebSocket(`ws://localhost:${port}/ws`);
+    client = socket;
+
+    const queueUpdate = await new Promise<{ type: string; queue: unknown[] }>((resolve) => {
+      socket.on('message', (data) => {
+        const message = JSON.parse(String(data));
+        if (message.type === 'event' && message.data.type === 'queue-updated') {
+          resolve(message.data);
+        }
+      });
+    });
+
+    expect(Array.isArray(queueUpdate.queue)).toBe(true);
+  }, 5000);
 });

@@ -13,7 +13,8 @@ Simulation autonome : le joueur n'intervient pas. Le backend est autoritaire (cl
 - Persistance en mémoire derrière des ports, une seule boutique. Les paramètres (serveurs, caisse, prix, seuils) viennent de la configuration du backend.
 - Prix de vente d'une boisson = coût de revient de sa recette x 1,30 (marge de 30 %).
 - Réassort automatique : alerte sous 100 unités d'un ingrédient ; budget par ingrédient = caisse / nombre d'ingrédients du catalogue ; quantité entre 100 et 1000 unités, dans la limite du budget et de la place restante.
-- Les événements du domaine sont publiés par un port, un adaptateur secondaire les diffuse en WebSocket (message `snapshot` à la connexion, puis messages `event`).
+- Clients : ils arrivent au hasard (processus de Poisson, 20 par heure simulée par défaut, `CUSTOMERS_PER_HOUR`) avec une personnalité (Pressé 6 min, Exigeant 12, Généreux 15, Décontracté 25 de patience simulée) et une boisson préférée. Le hasard vient d'un `RandomGenerator` avec graine (`RANDOM_SEED`). Un client qui a attendu plus que sa patience quitte la file (`customer-left`).
+- Les événements sont publiés par un port (`EventPublisher`), un adaptateur secondaire les diffuse en WebSocket sur `/ws` : message `snapshot` à la connexion, puis messages `event` (`clock-tick`, `day-started`, `day-ended`, `customer-arrived`, `customer-left`, `queue-updated`, d'autres suivront). Le frontend reconstruit l'état avec `applyEvent` et se reconnecte seul.
 
 ## Commandes
 

@@ -1,6 +1,7 @@
 import type { CalendarRepository } from '../domain/CalendarRepository.js';
 import type { CashReader } from '../domain/CashReader.js';
 import type { Clock } from '../domain/Clock.js';
+import type { CustomerFlow } from '../domain/CustomerFlow.js';
 import type { EventPublisher } from '../domain/EventPublisher.js';
 import type { Logger } from '../domain/Logger.js';
 import type { SimulationSnapshot } from '../domain/SimulationSnapshot.js';
@@ -23,6 +24,7 @@ export class SimulationApplicationService {
     private readonly scheduler: TickScheduler,
     private readonly publisher: EventPublisher,
     private readonly cashReader: CashReader,
+    private readonly customerFlow: CustomerFlow,
     private readonly logger: Logger,
     private readonly settings: SimulationSettings,
   ) {}
@@ -48,6 +50,9 @@ export class SimulationApplicationService {
     const events = calendar.advance(simulatedMinutes);
     await this.calendarRepository.save(calendar);
     events.forEach((event) => this.publisher.publish(event));
+
+    const customerEvents = await this.customerFlow.advance(simulatedMinutes);
+    customerEvents.forEach((event) => this.publisher.publish(event));
   }
 
   /** A failing tick is logged and the next ones still run: it must never crash the process. */
@@ -60,9 +65,10 @@ export class SimulationApplicationService {
   }
 
   async getSnapshot(): Promise<SimulationSnapshot> {
-    const [calendar, cashCents] = await Promise.all([
+    const [calendar, cashCents, queue] = await Promise.all([
       this.calendarRepository.get(),
       this.cashReader.balanceCents(),
+      this.customerFlow.queue(),
     ]);
     return {
       day: calendar.day,
@@ -70,6 +76,7 @@ export class SimulationApplicationService {
       time: calendar.time,
       dayLengthMinutes: calendar.dayLengthMinutes,
       cashCents,
+      queue,
     };
   }
 }

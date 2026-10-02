@@ -17,6 +17,8 @@ describe('config', () => {
       'TICK_INTERVAL_MS',
       'DAY_LENGTH_MINUTES',
       'DAY_START_HOUR',
+      'CUSTOMERS_PER_HOUR',
+      'RANDOM_SEED',
     ]) {
       vi.stubEnv(name, undefined);
     }
@@ -39,6 +41,8 @@ describe('config', () => {
       tickIntervalMs: 1000,
       dayLengthMinutes: 480,
       dayStartHour: 8,
+      customersPerHour: 20,
+      randomSeed: expect.any(Number),
     });
   });
 
@@ -52,6 +56,8 @@ describe('config', () => {
     vi.stubEnv('TICK_INTERVAL_MS', '500');
     vi.stubEnv('DAY_LENGTH_MINUTES', '240');
     vi.stubEnv('DAY_START_HOUR', '9');
+    vi.stubEnv('CUSTOMERS_PER_HOUR', '30');
+    vi.stubEnv('RANDOM_SEED', '42');
 
     const config = await loadConfig();
 
@@ -65,6 +71,8 @@ describe('config', () => {
       tickIntervalMs: 500,
       dayLengthMinutes: 240,
       dayStartHour: 9,
+      customersPerHour: 30,
+      randomSeed: 42,
     });
   });
 
@@ -76,6 +84,10 @@ describe('config', () => {
     ['TICK_INTERVAL_MS', 'abc'],
     ['TICK_INTERVAL_MS', '0'],
     ['TICK_INTERVAL_MS', '1.5'],
+    ['CUSTOMERS_PER_HOUR', '0'],
+    ['CUSTOMERS_PER_HOUR', 'abc'],
+    ['RANDOM_SEED', '-1'],
+    ['RANDOM_SEED', '1.5'],
     ['PORT', 'abc'],
     ['PORT', '70000'],
     ['STOCK_CAPACITY', '0'],
