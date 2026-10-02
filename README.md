@@ -34,7 +34,7 @@ npm run dev
 ```
 
 - Frontend : http://localhost:5173 (le proxy Vite redirige `/api` vers le backend)
-- Backend : http://localhost:3000/api/health
+- Backend : http://localhost:3000, avec `GET /api/health`, `GET /api/menu` (boissons, recettes, coût et prix de vente en centimes) et `GET /api/inventory` (stock par ingrédient)
 
 ## Scripts
 
