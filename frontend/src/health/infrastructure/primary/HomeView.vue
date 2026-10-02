@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useHealthStore } from '@/stores/health';
+import { useHealthStore } from './useHealthStore';
 
 const health = useHealthStore();
 onMounted(() => health.check());

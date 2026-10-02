@@ -49,8 +49,12 @@ npm run dev
 
 ## Structure
 
+Architecture hexagonale par contexte métier, vérifiée par `arch-unit-ts` (voir `CLAUDE.md`).
+
 ```
-backend/src/    app.ts (config Express), server.ts (démarrage), routes/
-backend/tests/  tests d'API (Supertest)
-frontend/src/   views/, stores/ (Pinia), router/, api/
+backend/src/    app.ts (composition root), server.ts, config.ts
+                health/ domain, application, infrastructure/{primary,secondary}
+backend/tests/  health/ (même découpage que src), tests d'API (Supertest) et d'architecture
+frontend/src/   main.ts (composition root), App.vue, router/
+                health/ domain, application, infrastructure/{primary,secondary}
 ```

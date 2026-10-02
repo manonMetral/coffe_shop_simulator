@@ -16,7 +16,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,vue}'],
-      exclude: ['src/**/*.test.ts', 'src/env.d.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/env.d.ts',
+        'src/BusinessContext.ts',
+        'src/**/package-info.ts',
+      ],
       reporter: ['text', 'lcov'],
       thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },
     },

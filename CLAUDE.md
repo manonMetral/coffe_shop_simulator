@@ -15,6 +15,26 @@ Node 22.12+ requis (`nvm use`, voir `.nvmrc`).
 - `npm run typecheck` : vérification TypeScript
 - `npm run build` : build des deux workspaces
 
+## Architecture hexagonale
+
+Backend et frontend suivent la même organisation, par contexte métier (aujourd'hui : `health`) :
+
+```
+src/<contexte>/
+  package-info.ts              étend BusinessContext (déclare le contexte)
+  domain/                      modèle et ports (interfaces), sans dépendance extérieure
+  application/                 services applicatifs, dépendent du domaine uniquement
+  infrastructure/primary/      adaptateurs entrants (routes Express, composants Vue, stores Pinia)
+  infrastructure/secondary/    adaptateurs sortants (implémentent les ports du domaine)
+```
+
+- Règles : le domaine ne dépend que du domaine ; l'application ne dépend pas de l'infrastructure ; le primaire ne dépend pas du secondaire ; le secondaire ne dépend pas de l'application ; un contexte ne dépend pas du domaine d'un autre.
+- Les dépendances sont assemblées hors des contextes (composition root) : `backend/src/app.ts` et `frontend/src/main.ts`. Côté frontend, le service applicatif est fourni aux composants par `provide`/`inject` (`healthServiceKey`).
+- Les règles sont vérifiées avec `arch-unit-ts` : `backend/tests/HexagonalArchTest.test.ts` et `frontend/src/HexagonalArchTest.test.ts`. Un nouveau contexte est détecté dès qu'il contient un `package-info.ts` qui étend `BusinessContext`.
+- Limite : `arch-unit-ts` n'analyse que les fichiers `.ts`, pas le contenu des `.vue`. Garder les composants Vue minces et placer la logique dans des `.ts` (stores, services).
+- Les tests du backend reprennent le même découpage : `backend/tests/<contexte>/{application,infrastructure/primary,infrastructure/secondary}/`. Pas de dossier `domain` tant que le domaine ne contient que des types. Les tests de la composition root (`app`, `config`, `server`) et d'architecture restent à la racine de `backend/tests/`.
+- `BusinessContext.ts` et les `package-info.ts` sont exclus de la couverture (classes marqueurs sans logique).
+
 ## Conventions Git et CI
 
 ### Branches
