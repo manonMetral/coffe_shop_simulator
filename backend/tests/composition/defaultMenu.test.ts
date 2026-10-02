@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DrinkName } from '../../../../src/shop/domain/menu/DrinkName.js';
-import { IngredientName } from '../../../../src/shop/domain/menu/IngredientName.js';
-import { createDefaultMenu } from '../../../../src/shop/infrastructure/secondary/DefaultCatalog.js';
+import { DrinkName } from '../../src/shop/domain/menu/DrinkName.js';
+import { IngredientName } from '../../src/shop/domain/menu/IngredientName.js';
+import { createDefaultMenu } from '../../src/composition/defaultMenu.js';
 
-describe('default catalog', () => {
+describe('default menu', () => {
   const menu = createDefaultMenu();
 
   it('offers 3 drinks made from 4 ingredients', () => {
