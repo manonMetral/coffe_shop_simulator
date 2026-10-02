@@ -9,3 +9,6 @@ coverage/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Plan d'implémentation (document local, non versionné)
+docs/PLAN.md
