@@ -2,6 +2,7 @@ import type { CalendarRepository } from '../domain/CalendarRepository.js';
 import type { CashReader } from '../domain/CashReader.js';
 import type { Clock } from '../domain/Clock.js';
 import type { EventPublisher } from '../domain/EventPublisher.js';
+import type { Logger } from '../domain/Logger.js';
 import type { SimulationSnapshot } from '../domain/SimulationSnapshot.js';
 import type { TickScheduler } from '../domain/TickScheduler.js';
 
@@ -22,12 +23,13 @@ export class SimulationApplicationService {
     private readonly scheduler: TickScheduler,
     private readonly publisher: EventPublisher,
     private readonly cashReader: CashReader,
+    private readonly logger: Logger,
     private readonly settings: SimulationSettings,
   ) {}
 
   start(): void {
     this.lastTickAt = this.clock.now();
-    this.scheduler.schedule(() => void this.tick(), this.settings.tickIntervalMs);
+    this.scheduler.schedule(() => void this.runTick(), this.settings.tickIntervalMs);
   }
 
   stop(): void {
@@ -37,14 +39,24 @@ export class SimulationApplicationService {
   /** Advances the simulated time by the real time elapsed since the previous tick. */
   async tick(): Promise<void> {
     const now = this.clock.now();
-    const simulatedMinutes =
-      ((now - this.lastTickAt) / MILLISECONDS_PER_MINUTE) * this.settings.timeScale;
+    // The system clock can go backwards (NTP, VM resume): the simulation then just waits.
+    const elapsedMs = Math.max(0, now - this.lastTickAt);
+    const simulatedMinutes = (elapsedMs / MILLISECONDS_PER_MINUTE) * this.settings.timeScale;
     this.lastTickAt = now;
 
     const calendar = await this.calendarRepository.get();
     const events = calendar.advance(simulatedMinutes);
     await this.calendarRepository.save(calendar);
     events.forEach((event) => this.publisher.publish(event));
+  }
+
+  /** A failing tick is logged and the next ones still run: it must never crash the process. */
+  private async runTick(): Promise<void> {
+    try {
+      await this.tick();
+    } catch (error) {
+      this.logger.error('Simulation tick failed', error);
+    }
   }
 
   async getSnapshot(): Promise<SimulationSnapshot> {

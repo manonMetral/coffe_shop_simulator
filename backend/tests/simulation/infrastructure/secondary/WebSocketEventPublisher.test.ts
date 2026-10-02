@@ -12,15 +12,21 @@ const snapshot: SimulationSnapshot = {
   cashCents: 30000,
 };
 
-const fakeSocket = (readyState: number) => ({ readyState, send: vi.fn() });
+const fakeSocket = (readyState: number) =>
+  Object.assign(new EventEmitter(), { readyState, send: vi.fn() });
 
-function createPublisher(clients: ReturnType<typeof fakeSocket>[] = []) {
+function createPublisher(
+  clients: ReturnType<typeof fakeSocket>[] = [],
+  snapshotProvider: () => Promise<SimulationSnapshot> = async () => snapshot,
+) {
   const server = Object.assign(new EventEmitter(), { clients: new Set(clients) });
+  const logger = { error: vi.fn() };
   const publisher = new WebSocketEventPublisher(
     server as unknown as WebSocketServer,
-    async () => snapshot,
+    snapshotProvider,
+    logger,
   );
-  return { server, publisher };
+  return { server, publisher, logger };
 }
 
 describe('WebSocketEventPublisher', () => {
@@ -59,5 +65,31 @@ describe('WebSocketEventPublisher', () => {
     await Promise.resolve();
 
     expect(socket.send).not.toHaveBeenCalled();
+  });
+
+  it('logs a snapshot failure instead of crashing', async () => {
+    const failure = new Error('cash unavailable');
+    const { server, logger } = createPublisher([], async () => {
+      throw failure;
+    });
+    const socket = fakeSocket(WebSocket.OPEN);
+
+    server.emit('connection', socket);
+
+    await vi.waitFor(() =>
+      expect(logger.error).toHaveBeenCalledWith('Sending the snapshot failed', failure),
+    );
+    expect(socket.send).not.toHaveBeenCalled();
+  });
+
+  it('logs a client socket error instead of crashing', () => {
+    const { server, logger } = createPublisher();
+    const socket = fakeSocket(WebSocket.OPEN);
+    const failure = new Error('connection reset');
+
+    server.emit('connection', socket);
+
+    expect(() => socket.emit('error', failure)).not.toThrow();
+    expect(logger.error).toHaveBeenCalledWith('WebSocket client error', failure);
   });
 });

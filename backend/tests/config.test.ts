@@ -67,4 +67,39 @@ describe('config', () => {
       dayStartHour: 9,
     });
   });
+
+  it.each([
+    ['TIME_SCALE', 'abc'],
+    ['TIME_SCALE', ''],
+    ['TIME_SCALE', '0'],
+    ['TIME_SCALE', '-2'],
+    ['TICK_INTERVAL_MS', 'abc'],
+    ['TICK_INTERVAL_MS', '0'],
+    ['TICK_INTERVAL_MS', '1.5'],
+    ['PORT', 'abc'],
+    ['PORT', '70000'],
+    ['STOCK_CAPACITY', '0'],
+    ['LOW_STOCK_THRESHOLD', '-1'],
+    ['INITIAL_CASH_CENTS', ' '],
+    ['DAY_LENGTH_MINUTES', '1441'],
+    ['DAY_START_HOUR', '24'],
+    ['CORS_ORIGIN', ''],
+  ])('rejects %s=%j', async (name, value) => {
+    vi.stubEnv(name, value);
+
+    await expect(loadConfig()).rejects.toThrow(new RegExp(`- ${name} must`));
+  });
+
+  it('reports every invalid variable at once', async () => {
+    vi.stubEnv('TIME_SCALE', 'abc');
+    vi.stubEnv('PORT', '0');
+
+    await expect(loadConfig()).rejects.toThrow(/- PORT must[^]*- TIME_SCALE must/);
+  });
+
+  it('accepts a decimal time scale', async () => {
+    vi.stubEnv('TIME_SCALE', '0.5');
+
+    expect((await loadConfig()).timeScale).toBe(0.5);
+  });
 });
