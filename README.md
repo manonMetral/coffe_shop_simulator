@@ -57,5 +57,5 @@ backend/src/    composition/, app.ts, bootstrap.ts (composition root), server.ts
                 health/, shop/, simulation/ : domain, application, infrastructure/{primary,secondary}
 backend/tests/  health/ (même découpage que src), tests d'API (Supertest) et d'architecture
 frontend/src/   main.ts (composition root), App.vue, router/, views/
-                health/, shop/ : domain, application, infrastructure/{primary,secondary}
+                shop/ : domain, application, infrastructure/{primary,secondary}
 ```
