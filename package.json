@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "dev": "npm-run-all --parallel dev:backend dev:frontend",
-    "dev:backend": "cd backend && tsx watch src/server.ts",
+    "dev:backend": "cd backend && tsx watch --env-file-if-exists=.env src/server.ts",
     "dev:frontend": "cd frontend && vite",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
